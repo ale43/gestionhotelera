@@ -1,0 +1,5 @@
+package Entidades;
+
+public enum PosicionIVA {
+    CONSUMIDOR_FINAL, RESPONSABLE_INSCRIPTO, MONOTRIBUTO, EXENTO
+}

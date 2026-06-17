@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hotel Premier · Baja de Responsable de Pago (CU14)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --tinta:#1c2b25; --verde:#23463a; --verde-claro:#3a6b58;
+    --laton:#b08545; --laton-claro:#cda567;
+    --hueso:#f4efe6; --hueso-2:#ece4d6; --papel:#fbf8f2; --linea:#ddd2bf;
+    --error:#8c3b32; --error-bg:#f6e7e3; --ok:#2f6d4f; --ok-bg:#e6f0e7;
+    --sombra:0 18px 40px -22px rgba(28,43,37,.45);
+  }
+  *{box-sizing:border-box}
+  body{margin:0; min-height:100vh; color:var(--tinta); font-family:"Karla",system-ui,sans-serif;
+    background:radial-gradient(1200px 500px at 110% -10%, rgba(176,133,69,.16), transparent 60%),
+      radial-gradient(900px 500px at -10% 0%, rgba(35,70,58,.12), transparent 55%), var(--hueso);}
+  header.barra{background:linear-gradient(180deg,var(--verde),var(--tinta)); color:var(--hueso);
+    padding:26px 32px; display:flex; align-items:center; gap:18px; border-bottom:3px solid var(--laton);}
+  .escudo{width:46px;height:46px;border-radius:50%;border:2px solid var(--laton-claro);
+    display:grid;place-items:center; flex:none; font-family:"Fraunces",serif; font-weight:700;
+    font-size:20px; color:var(--laton-claro); letter-spacing:.5px;}
+  header h1{font-family:"Fraunces",serif; font-weight:600; font-size:22px; margin:0; letter-spacing:.3px}
+  header p{margin:2px 0 0; font-size:13px; color:#cdd8cf; letter-spacing:.6px; text-transform:uppercase}
+  main{max-width:920px; margin:34px auto; padding:0 22px 60px}
+  .tarjeta{background:var(--papel); border:1px solid var(--linea); border-radius:14px;
+    box-shadow:var(--sombra); overflow:hidden; margin-bottom:26px;}
+  .tarjeta > h2{font-family:"Fraunces",serif; font-weight:600; font-size:17px; margin:0;
+    padding:16px 22px; border-bottom:1px solid var(--linea);
+    background:linear-gradient(180deg,#fff,var(--hueso-2)); display:flex; align-items:center; gap:10px;}
+  .tag{font-size:11px;font-weight:700;letter-spacing:.8px; background:var(--verde); color:var(--hueso);
+    padding:3px 9px; border-radius:999px}
+  .cuerpo{padding:20px 22px}
+  .form{display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end}
+  .campo{display:flex; flex-direction:column; gap:6px; flex:1 1 200px}
+  .campo label{font-size:12px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:var(--verde)}
+  .campo input{padding:11px 13px; border:1px solid var(--linea); border-radius:9px; font-family:inherit;
+    font-size:15px; background:#fff; color:var(--tinta); text-transform:uppercase;}
+  .campo input:focus{outline:none; border-color:var(--laton); box-shadow:0 0 0 3px rgba(176,133,69,.18)}
+  button{font-family:inherit; cursor:pointer; border:none; border-radius:9px; font-weight:700; letter-spacing:.3px}
+  .btn-buscar{background:var(--verde); color:var(--hueso); padding:12px 22px; font-size:14px}
+  .btn-buscar:hover{background:var(--verde-claro)}
+  table{width:100%; border-collapse:collapse; margin-top:4px}
+  thead th{text-align:left; font-size:11px; letter-spacing:.7px; text-transform:uppercase; color:var(--verde);
+    padding:10px 12px; border-bottom:2px solid var(--linea);}
+  tbody td{padding:13px 12px; border-bottom:1px solid var(--hueso-2); font-size:14px; vertical-align:top}
+  tbody tr:hover{background:#fff}
+  .cuit{font-variant-numeric:tabular-nums; font-weight:600; white-space:nowrap}
+  .dir{color:#6a6253; font-size:12.5px}
+  .btn-baja{background:transparent; color:var(--error); border:1.4px solid var(--error); padding:8px 14px; font-size:13px}
+  .btn-baja:hover{background:var(--error); color:#fff}
+  .vacio{padding:26px 12px; text-align:center; color:#8a826f; font-style:italic}
+  .overlay{position:fixed; inset:0; background:rgba(28,43,37,.55); backdrop-filter:blur(2px);
+    display:none; align-items:center; justify-content:center; padding:20px; z-index:50}
+  .overlay.activo{display:flex}
+  .modal{background:var(--papel); border-radius:16px; max-width:480px; width:100%;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.5); overflow:hidden; border:1px solid var(--linea);
+    animation:surge .22s ease-out}
+  @keyframes surge{from{transform:translateY(12px) scale(.98); opacity:0} to{transform:none; opacity:1}}
+  .modal .top{padding:18px 22px; border-bottom:1px solid var(--linea); font-family:"Fraunces",serif;
+    font-size:17px; font-weight:600; display:flex; align-items:center; gap:10px}
+  .modal .top .ico{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+    color:#fff; font-weight:800; font-size:16px; flex:none}
+  .modal.confirmar .ico{background:var(--laton)}
+  .modal.error .ico{background:var(--error)}
+  .modal .msg{padding:22px; font-size:15px; line-height:1.55}
+  .modal .msg .fuerte{font-weight:700; color:var(--verde)}
+  .modal .acciones{padding:16px 22px; display:flex; justify-content:flex-end; gap:12px;
+    border-top:1px solid var(--linea); background:var(--hueso-2)}
+  .btn-eliminar{background:var(--error); color:#fff; padding:11px 20px; font-size:14px}
+  .btn-eliminar:hover{background:#732f28}
+  .btn-cancelar{background:#fff; color:var(--tinta); border:1px solid var(--linea); padding:11px 20px; font-size:14px}
+  .btn-cancelar:hover{background:var(--hueso)}
+  .btn-cerrar{background:var(--verde); color:#fff; padding:11px 20px; font-size:14px}
+  .toast{position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(20px); opacity:0;
+    transition:.25s; padding:14px 20px; border-radius:10px; font-weight:600; font-size:14px;
+    box-shadow:var(--sombra); z-index:60; max-width:90vw}
+  .toast.ver{opacity:1; transform:translateX(-50%) translateY(0)}
+  .toast.ok{background:var(--ok-bg); color:var(--ok); border:1px solid #bcd9c4}
+  .toast.mal{background:var(--error-bg); color:var(--error); border:1px solid #e3c4bd}
+  footer{max-width:920px;margin:0 auto;padding:0 22px 40px;color:#8a826f;font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+  <header class="barra">
+    <div class="escudo">HP</div>
+    <div>
+      <h1>Hotel Premier — Santa Fe</h1>
+      <p>Gestión de Responsables de Pago · CU14 Dar de Baja</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="tarjeta">
+      <h2><span class="tag">CU03</span> Buscar Responsable de Pago</h2>
+      <div class="cuerpo">
+        <div class="form">
+          <div class="campo">
+            <label for="razon">Razón Social / Apellido (empieza con)</label>
+            <input id="razon" type="text" placeholder="EJ: TURISMO" autocomplete="off">
+          </div>
+          <div class="campo">
+            <label for="cuit">CUIT (empieza con)</label>
+            <input id="cuit" type="text" placeholder="EJ: 30-" autocomplete="off">
+          </div>
+          <button class="btn-buscar" onclick="buscar()">Buscar</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="tarjeta">
+      <h2><span class="tag">CU14</span> Resultados — seleccione para dar de baja</h2>
+      <div class="cuerpo" style="padding-top:8px">
+        <table>
+          <thead><tr><th>Razón Social</th><th>CUIT</th><th>Domicilio</th><th></th></tr></thead>
+          <tbody id="filas">
+            <tr><td colspan="4" class="vacio">Presione “Buscar” para listar los responsables de pago.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>Diseño de Sistemas de Información · TP Gestión Hotelera 2025 · Backend Java (NetBeans) + Frontend web</footer>
+
+  <div class="overlay" id="overlay">
+    <div class="modal confirmar" id="modal">
+      <div class="top"><span class="ico" id="modalIco">!</span><span id="modalTitulo">Confirmar baja</span></div>
+      <div class="msg" id="modalMsg"></div>
+      <div class="acciones" id="modalAcciones"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  const API = (location.protocol === "file:")
+      ? "http://localhost:8080/api/responsables"
+      : "/api/responsables";
+
+  let seleccionado = null; // idResponsable pendiente de eliminar
+
+  async function buscar(){
+    const razon = document.getElementById("razon").value.trim();
+    const cuit  = document.getElementById("cuit").value.trim();
+    const url = API + "?razonSocial=" + encodeURIComponent(razon) + "&cuit=" + encodeURIComponent(cuit);
+    const filas = document.getElementById("filas");
+    try{
+      const resp = await fetch(url);
+      const lista = await resp.json();
+      if(!lista.length){
+        filas.innerHTML = '<tr><td colspan="4" class="vacio">No existen responsables de pago para los criterios de búsqueda.</td></tr>';
+        return;
+      }
+      filas.innerHTML = lista.map(r => `
+        <tr>
+          <td>${escapar(r.razonSocial)}</td>
+          <td class="cuit">${escapar(r.cuit)}</td>
+          <td class="dir">${escapar(r.direccion)}</td>
+          <td style="text-align:right">
+            <button class="btn-baja" onclick="solicitarBaja(${r.idResponsable})">Dar de baja</button>
+          </td>
+        </tr>`).join("");
+    }catch(e){
+      mostrarToast("No se pudo conectar con el backend. ¿Está corriendo en el puerto 8080?", false);
+    }
+  }
+
+  // CU14: Conserje presiona "BORRAR" -> prepararBaja(idResponsable)
+  async function solicitarBaja(id){
+    try{
+      const resp = await fetch(API + "/" + id + "/preparar");
+      const v = await resp.json();
+      if(v.puedeEliminarse) abrirModalConfirmar(id, v.mensaje);   // mostrarConfirmacionEliminacion
+      else abrirModalError(v.mensaje);                            // mostrarError
+    }catch(e){ mostrarToast("Error de conexión con el backend.", false); }
+  }
+
+  function abrirModalConfirmar(id, mensaje){
+    seleccionado = id;
+    document.getElementById("modal").className = "modal confirmar";
+    document.getElementById("modalIco").textContent = "!";
+    document.getElementById("modalTitulo").textContent = "Confirmar baja";
+    document.getElementById("modalMsg").innerHTML = '<span class="fuerte">' + escapar(mensaje) + '</span>';
+    document.getElementById("modalAcciones").innerHTML =
+      '<button class="btn-cancelar" onclick="cerrarModal()">CANCELAR</button>' +
+      '<button class="btn-eliminar" onclick="eliminar()">ELIMINAR</button>';
+    document.getElementById("overlay").classList.add("activo");
+  }
+
+  function abrirModalError(mensaje){
+    seleccionado = null;
+    document.getElementById("modal").className = "modal error";
+    document.getElementById("modalIco").textContent = "✕";
+    document.getElementById("modalTitulo").textContent = "No es posible eliminar";
+    document.getElementById("modalMsg").textContent = mensaje;
+    document.getElementById("modalAcciones").innerHTML =
+      '<button class="btn-cerrar" onclick="cerrarModal()">ENTENDIDO</button>';
+    document.getElementById("overlay").classList.add("activo");
+  }
+
+  // CU14: Actor confirma ELIMINAR -> confirmarEliminacion(idResponsable) (baja lógica)
+  async function eliminar(){
+    if(seleccionado === null) return;
+    try{
+      const resp = await fetch(API + "/" + seleccionado + "/eliminar", { method:"POST" });
+      const r = await resp.json();
+      cerrarModal();
+      mostrarToast(r.mensaje, r.exito);   // "Eliminado."
+      if(r.exito) buscar();
+    }catch(e){ cerrarModal(); mostrarToast("Error de conexión con el backend.", false); }
+  }
+
+  function cerrarModal(){
+    document.getElementById("overlay").classList.remove("activo");
+    seleccionado = null;
+  }
+
+  function mostrarToast(texto, ok){
+    const t = document.getElementById("toast");
+    t.textContent = texto;
+    t.className = "toast ver " + (ok ? "ok" : "mal");
+    setTimeout(()=> t.className = "toast " + (ok ? "ok" : "mal"), 4200);
+  }
+
+  function escapar(s){
+    return String(s).replace(/[&<>"']/g, c => (
+      {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]
+    ));
+  }
+
+  document.getElementById("overlay").addEventListener("click", e => {
+    if(e.target.id === "overlay") cerrarModal();
+  });
+</script>
+</body>
+</html>
