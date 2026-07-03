@@ -1,3 +1,4 @@
+Controlador\ControladorSesion.class
 Infraestructura\ConexionBD.class
 Entidades\MonedaExtranjera.class
 Entidades\ChequePropio.class
@@ -19,8 +20,10 @@ Controlador\ControladorResponsable.class
 Entidades\Habitacion.class
 Entidades\Huesped.class
 Entidades\EstadoReserva.class
+DTOS\ConserjeDTO.class
 Entidades\PosicionIVA.class
 Entidades\TarjetaCredito.class
+Repositorios\RepositorioConserjeBD.class
 Repositorios\IRepositorioResponsable.class
 Entidades\PersonaFisica.class
 Entidades\EstadoHabitacion.class
@@ -38,6 +41,7 @@ Infraestructura\ServidorRest.class
 DTOS\ResultadoBajaDTO.class
 Repositorios\RepositorioFactory.class
 Infraestructura\Json.class
+Repositorios\IRepositorioConserje.class
 Entidades\NotaCredito.class
 Entidades\EstadoFactura.class
 Entidades\TipoConsumo.class

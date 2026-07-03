@@ -1,9 +1,8 @@
 package DTOS;
 
-/** DTO plano para la vista. Lo produce ResponsableDePago.toDTO(). */
 public class ResponsableDTO {
     private final Integer idResponsable;
-    private final String razonSocial;   // denominación (razón social o "apellido, nombre")
+    private final String razonSocial;  
     private final String cuit;
     private final String direccion;
     private final String telefono;

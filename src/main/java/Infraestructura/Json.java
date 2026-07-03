@@ -1,11 +1,10 @@
 package Infraestructura;
 
+import DTOS.ConserjeDTO;
 import DTOS.ResponsableDTO;
 import DTOS.ResultadoBajaDTO;
 import DTOS.ResultadoVerificacionDTO;
 import java.util.List;
-
-/** Serializador JSON mínimo, sin dependencias externas. */
 public final class Json {
     private Json() { }
 
@@ -54,5 +53,18 @@ public final class Json {
 
     public static String de(ResultadoBajaDTO r) {
         return "{\"exito\":" + r.isExito() + ",\"mensaje\":\"" + escapar(r.getMensaje()) + "\"}";
+    }
+
+    public static String de(ConserjeDTO c) {
+        return "{"
+            + "\"idConserje\":" + c.getIdConserje() + ","
+            + "\"nombre\":\"" + escapar(c.getNombre()) + "\""
+            + "}";
+    }
+
+    public static String deListaConserjes(List<ConserjeDTO> lista) {
+        StringBuilder b = new StringBuilder("[");
+        for (int i = 0; i < lista.size(); i++) { if (i>0) b.append(","); b.append(de(lista.get(i))); }
+        return b.append("]").toString();
     }
 }

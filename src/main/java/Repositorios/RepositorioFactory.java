@@ -11,4 +11,7 @@ public final class RepositorioFactory {
     public static IRepositorioFacturas getRepositorioFacturas() {
         return new RepositorioFacturasBD();
     }
+    public static IRepositorioConserje getRepositorioConserje() {
+        return new RepositorioConserjeBD();
+    }
 }

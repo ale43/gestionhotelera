@@ -1,4 +1,6 @@
 D:\PC\Documents\NetBeansProjects\gestionhotelera\src\main\java\Controlador\ControladorResponsable.java
+D:\PC\Documents\NetBeansProjects\gestionhotelera\src\main\java\Controlador\ControladorSesion.java
+D:\PC\Documents\NetBeansProjects\gestionhotelera\src\main\java\DTOS\ConserjeDTO.java
 D:\PC\Documents\NetBeansProjects\gestionhotelera\src\main\java\DTOS\ResponsableDTO.java
 D:\PC\Documents\NetBeansProjects\gestionhotelera\src\main\java\DTOS\ResultadoBajaDTO.java
 D:\PC\Documents\NetBeansProjects\gestionhotelera\src\main\java\DTOS\ResultadoVerificacionDTO.java
@@ -37,8 +39,10 @@ D:\PC\Documents\NetBeansProjects\gestionhotelera\src\main\java\Infraestructura\I
 D:\PC\Documents\NetBeansProjects\gestionhotelera\src\main\java\Infraestructura\Json.java
 D:\PC\Documents\NetBeansProjects\gestionhotelera\src\main\java\Infraestructura\ServidorRest.java
 D:\PC\Documents\NetBeansProjects\gestionhotelera\src\main\java\isi\deso\gestionhotelera\Gestionhotelera.java
+D:\PC\Documents\NetBeansProjects\gestionhotelera\src\main\java\Repositorios\IRepositorioConserje.java
 D:\PC\Documents\NetBeansProjects\gestionhotelera\src\main\java\Repositorios\IRepositorioFacturas.java
 D:\PC\Documents\NetBeansProjects\gestionhotelera\src\main\java\Repositorios\IRepositorioResponsable.java
+D:\PC\Documents\NetBeansProjects\gestionhotelera\src\main\java\Repositorios\RepositorioConserjeBD.java
 D:\PC\Documents\NetBeansProjects\gestionhotelera\src\main\java\Repositorios\RepositorioFactory.java
 D:\PC\Documents\NetBeansProjects\gestionhotelera\src\main\java\Repositorios\RepositorioFacturasBD.java
 D:\PC\Documents\NetBeansProjects\gestionhotelera\src\main\java\Repositorios\RepositorioResponsableBD.java

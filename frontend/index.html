@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hotel Premier · Baja de Responsable de Pago (CU14)</title>
+<title>Hotel Premier · Gestión de Responsables de Pago</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -26,6 +26,11 @@
     font-size:20px; color:var(--laton-claro); letter-spacing:.5px;}
   header h1{font-family:"Fraunces",serif; font-weight:600; font-size:22px; margin:0; letter-spacing:.3px}
   header p{margin:2px 0 0; font-size:13px; color:#cdd8cf; letter-spacing:.6px; text-transform:uppercase}
+  .sesion{margin-left:auto; display:none; align-items:center; gap:12px; font-size:13px; color:#cdd8cf}
+  .sesion strong{color:var(--laton-claro); letter-spacing:.5px}
+  .btn-salir{background:transparent; color:#cdd8cf; border:1px solid rgba(205,216,207,.4);
+    padding:7px 14px; font-size:12px; border-radius:8px}
+  .btn-salir:hover{border-color:var(--laton-claro); color:var(--laton-claro)}
   main{max-width:920px; margin:34px auto; padding:0 22px 60px}
   .tarjeta{background:var(--papel); border:1px solid var(--linea); border-radius:14px;
     box-shadow:var(--sombra); overflow:hidden; margin-bottom:26px;}
@@ -40,6 +45,7 @@
   .campo label{font-size:12px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:var(--verde)}
   .campo input{padding:11px 13px; border:1px solid var(--linea); border-radius:9px; font-family:inherit;
     font-size:15px; background:#fff; color:var(--tinta); text-transform:uppercase;}
+  .campo input[type=password]{text-transform:none}
   .campo input:focus{outline:none; border-color:var(--laton); box-shadow:0 0 0 3px rgba(176,133,69,.18)}
   button{font-family:inherit; cursor:pointer; border:none; border-radius:9px; font-weight:700; letter-spacing:.3px}
   .btn-buscar{background:var(--verde); color:var(--hueso); padding:12px 22px; font-size:14px}
@@ -54,6 +60,29 @@
   .btn-baja{background:transparent; color:var(--error); border:1.4px solid var(--error); padding:8px 14px; font-size:13px}
   .btn-baja:hover{background:var(--error); color:#fff}
   .vacio{padding:26px 12px; text-align:center; color:#8a826f; font-style:italic}
+  .estado-cuit{font-size:12px; min-height:14px; font-weight:600}
+  .estado-cuit.bien{color:var(--ok)}
+  .estado-cuit.mal{color:var(--error)}
+  .estado-cuit.neutro{color:#8a826f; font-weight:400; font-style:italic}
+  .modal .msg.centrado{text-align:center}
+
+  /* ---- LOGIN (mockup CU01) ---- */
+  .login-wrap{min-height:calc(100vh - 110px); display:flex; align-items:center; justify-content:center; padding:30px 20px}
+  .login{background:var(--papel); border:1px solid var(--linea); border-radius:16px; box-shadow:var(--sombra);
+    width:100%; max-width:420px; overflow:hidden}
+  .login .top{padding:26px 28px 18px; text-align:center; border-bottom:1px solid var(--linea);
+    background:linear-gradient(180deg,#fff,var(--hueso-2))}
+  .login .top h2{font-family:"Fraunces",serif; font-weight:600; font-size:20px; margin:0 0 4px}
+  .login .top p{margin:0; font-size:12px; letter-spacing:.6px; text-transform:uppercase; color:#8a826f}
+  .login .cuerpo{display:flex; flex-direction:column; gap:16px; padding:24px 28px 28px}
+  .login .campo{flex:none}
+  .btn-ingresar{background:var(--verde); color:var(--hueso); padding:13px; font-size:15px; margin-top:4px}
+  .btn-ingresar:hover{background:var(--verde-claro)}
+  .login-error{display:none; background:var(--error-bg); color:var(--error); border:1px solid #e3c4bd;
+    border-radius:9px; padding:11px 14px; font-size:13.5px; font-weight:600}
+  .login-error.ver{display:block}
+  .nota-mock{font-size:11.5px; color:#8a826f; text-align:center; line-height:1.5}
+
   .overlay{position:fixed; inset:0; background:rgba(28,43,37,.55); backdrop-filter:blur(2px);
     display:none; align-items:center; justify-content:center; padding:20px; z-index:50}
   .overlay.activo{display:flex}
@@ -92,9 +121,36 @@
       <h1>Hotel Premier — Santa Fe</h1>
       <p>Gestión de Responsables de Pago · CU14 Dar de Baja</p>
     </div>
+    <div class="sesion" id="sesion">
+      Conserje: <strong id="sesionUsuario"></strong>
+      <button class="btn-salir" onclick="cerrarSesion()">Cerrar sesión</button>
+    </div>
   </header>
 
-  <main>
+  <!-- ============ VISTA LOGIN (mockup del CU01 - Autenticar Usuario) ============ -->
+  <div class="login-wrap" id="vistaLogin">
+    <div class="login">
+      <div class="top">
+        <h2>Autenticar Usuario</h2>
+        <p>Hotel Premier · Ingreso al sistema</p>
+      </div>
+      <div class="cuerpo">
+        <div class="login-error" id="loginError">El usuario o la contraseña no son válidos</div>
+        <div class="campo">
+          <label for="loginUsuario">Nombre de usuario</label>
+          <input id="loginUsuario" type="text" autocomplete="off" placeholder="EJ: ADMIN">
+        </div>
+        <div class="campo">
+          <label for="loginClave">Contraseña</label>
+          <input id="loginClave" type="password" autocomplete="off" placeholder="********">
+        </div>
+        <button class="btn-ingresar" onclick="ingresar()">INGRESAR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ VISTA PRINCIPAL (CU03 + CU14) ============ -->
+  <main id="vistaApp" style="display:none">
     <section class="tarjeta">
       <h2><span class="tag">CU03</span> Buscar Responsable de Pago</h2>
       <div class="cuerpo">
@@ -104,8 +160,9 @@
             <input id="razon" type="text" placeholder="EJ: TURISMO" autocomplete="off">
           </div>
           <div class="campo">
-            <label for="cuit">CUIT (empieza con)</label>
-            <input id="cuit" type="text" placeholder="EJ: 30-" autocomplete="off">
+            <label for="cuit">CUIT (XX-XXXXXXXX-X)</label>
+            <input id="cuit" type="text" placeholder="EJ: 30-12345678-1" autocomplete="off" inputmode="numeric">
+            <small id="cuitEstado" class="estado-cuit"></small>
           </div>
           <button class="btn-buscar" onclick="buscar()">Buscar</button>
         </div>
@@ -119,6 +176,29 @@
           <thead><tr><th>Razón Social</th><th>CUIT</th><th>Domicilio</th><th></th></tr></thead>
           <tbody id="filas">
             <tr><td colspan="4" class="vacio">Presione “Buscar” para listar los responsables de pago.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="tarjeta">
+      <h2><span class="tag">USUARIOS</span> Usuarios del sistema</h2>
+      <div class="cuerpo">
+        <div class="form" style="margin-bottom:18px">
+          <div class="campo">
+            <label for="nuevoUsuario">Nombre de usuario</label>
+            <input id="nuevoUsuario" type="text" placeholder="EJ: MGOMEZ" autocomplete="off">
+          </div>
+          <div class="campo">
+            <label for="nuevaClave">Contraseña</label>
+            <input id="nuevaClave" type="password" placeholder="********" autocomplete="new-password">
+          </div>
+          <button class="btn-buscar" onclick="agregarUsuario()">Agregar usuario</button>
+        </div>
+        <table>
+          <thead><tr><th>ID</th><th>Usuario</th><th></th></tr></thead>
+          <tbody id="filasUsuarios">
+            <tr><td colspan="3" class="vacio">Cargando usuarios…</td></tr>
           </tbody>
         </table>
       </div>
@@ -144,9 +224,197 @@
 
   let seleccionado = null; // idResponsable pendiente de eliminar
 
+  /* ================= CU01 - Autenticar Usuario =================
+     Precondición del CU14: "El actor está autenticado en el sistema".
+     Valida contra la tabla `conserje` de PostgreSQL vía POST /api/login.
+     Los usuarios se administran en la BD (pgAdmin4).
+     Mensaje de error EXACTO del enunciado del CU01. */
+  const API_LOGIN = (location.protocol === "file:")
+      ? "http://localhost:8080/api/login"
+      : "/api/login";
+
+  async function ingresar(){
+    const u = document.getElementById("loginUsuario").value.trim();
+    const c = document.getElementById("loginClave").value;
+    const err = document.getElementById("loginError");
+
+    try{
+      const resp = await fetch(API_LOGIN, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "usuario=" + encodeURIComponent(u) + "&clave=" + encodeURIComponent(c)
+      });
+      const r = await resp.json();
+
+      if (r.exito) {
+        err.classList.remove("ver");
+        document.getElementById("vistaLogin").style.display = "none";
+        document.getElementById("vistaApp").style.display = "block";
+        document.getElementById("sesion").style.display = "flex";
+        document.getElementById("sesionUsuario").textContent = r.nombre;
+        cargarUsuarios();
+      } else {
+        // 3.A del CU01: mensaje exacto + blanqueo de campos + vuelve al paso 2
+        err.textContent = r.mensaje || "El usuario o la contraseña no son válidos";
+        err.classList.add("ver");
+        document.getElementById("loginUsuario").value = "";
+        document.getElementById("loginClave").value = "";
+        document.getElementById("loginUsuario").focus();
+      }
+    }catch(e){
+      err.textContent = "No se pudo conectar con el backend. ¿Está corriendo en el puerto 8080?";
+      err.classList.add("ver");
+    }
+  }
+
+  function cerrarSesion(){
+    document.getElementById("vistaApp").style.display = "none";
+    document.getElementById("sesion").style.display = "none";
+    document.getElementById("vistaLogin").style.display = "flex";
+    document.getElementById("filas").innerHTML =
+      '<tr><td colspan="4" class="vacio">Presione “Buscar” para listar los responsables de pago.</td></tr>';
+  }
+
+  // Enter en el login dispara INGRESAR (requisito: click y <Enter> mismo efecto)
+  ["loginUsuario","loginClave"].forEach(id => {
+    document.getElementById(id).addEventListener("keydown", e => { if(e.key === "Enter") ingresar(); });
+  });
+
+  /* ================= Administracion de usuarios (tabla conserje) ================= */
+  const API_CONSERJES = (location.protocol === "file:")
+      ? "http://localhost:8080/api/conserjes"
+      : "/api/conserjes";
+
+  async function cargarUsuarios(){
+    const filas = document.getElementById("filasUsuarios");
+    try{
+      const resp = await fetch(API_CONSERJES);
+      const lista = await resp.json();
+      if(!lista.length){
+        filas.innerHTML = '<tr><td colspan="3" class="vacio">No hay usuarios cargados.</td></tr>';
+        return;
+      }
+      const logueado = document.getElementById("sesionUsuario").textContent.toLowerCase();
+      filas.innerHTML = lista.map(u => `
+        <tr>
+          <td>${u.idConserje}</td>
+          <td style="text-transform:uppercase; font-weight:600">${escapar(u.nombre)}</td>
+          <td style="text-align:right">
+            ${u.nombre.toLowerCase() === logueado
+              ? '<span class="dir">(sesión actual)</span>'
+              : `<button class="btn-baja" onclick="eliminarUsuario('${escapar(u.nombre)}')">Eliminar</button>`}
+          </td>
+        </tr>`).join("");
+    }catch(e){
+      filas.innerHTML = '<tr><td colspan="3" class="vacio">No se pudo cargar la lista de usuarios.</td></tr>';
+    }
+  }
+
+  async function agregarUsuario(){
+    const u = document.getElementById("nuevoUsuario").value.trim();
+    const c = document.getElementById("nuevaClave").value;
+    try{
+      const resp = await fetch(API_CONSERJES, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "usuario=" + encodeURIComponent(u) + "&clave=" + encodeURIComponent(c)
+      });
+      const r = await resp.json();
+      mostrarToast(r.mensaje, r.exito);
+      if(r.exito){
+        document.getElementById("nuevoUsuario").value = "";
+        document.getElementById("nuevaClave").value = "";
+        cargarUsuarios();
+      }
+    }catch(e){ mostrarToast("Error de conexión con el backend.", false); }
+  }
+
+  function eliminarUsuario(nombre){
+    document.getElementById("modal").className = "modal confirmar";
+    document.getElementById("modalIco").textContent = "!";
+    document.getElementById("modalTitulo").textContent = "Eliminar usuario";
+    document.getElementById("modalMsg").innerHTML =
+      '<span class="fuerte">El usuario ' + escapar(nombre.toUpperCase()) + ' será eliminado del sistema.</span>';
+    document.getElementById("modalAcciones").innerHTML =
+      '<button class="btn-cancelar" onclick="cerrarModal()">CANCELAR</button>' +
+      '<button class="btn-eliminar" onclick="confirmarEliminarUsuario(\'' + escapar(nombre) + '\')">ELIMINAR</button>';
+    document.getElementById("overlay").classList.add("activo");
+  }
+
+  async function confirmarEliminarUsuario(nombre){
+    try{
+      const resp = await fetch(API_CONSERJES + "/eliminar", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "usuario=" + encodeURIComponent(nombre)
+      });
+      const r = await resp.json();
+      cerrarModal();
+      mostrarToast(r.mensaje, r.exito);
+      if(r.exito) cargarUsuarios();
+    }catch(e){ cerrarModal(); mostrarToast("Error de conexión con el backend.", false); }
+  }
+
+  /* ================= Validacion de CUIT (formato ARCA: XX-XXXXXXXX-X) ================= */
+  const PREFIJOS_CUIT = ["20","23","24","25","26","27","30","33","34"];
+
+  function soloDigitos(s){ return s.replace(/\D/g, ""); }
+
+  function formatearCuit(valor){
+    const d = soloDigitos(valor).slice(0, 11);
+    if (d.length <= 2)  return d;
+    if (d.length <= 10) return d.slice(0,2) + "-" + d.slice(2);
+    return d.slice(0,2) + "-" + d.slice(2,10) + "-" + d.slice(10);
+  }
+
+  /* Devuelve null si el CUIT (11 digitos) es valido, o el motivo del error.
+     Algoritmo modulo 11 con pesos 5,4,3,2,7,6,5,4,3,2. */
+  function validarCuitCompleto(d){
+    if (!PREFIJOS_CUIT.includes(d.slice(0,2)))
+      return "el prefijo " + d.slice(0,2) + " no corresponde a un tipo de CUIT válido";
+    const pesos = [5,4,3,2,7,6,5,4,3,2];
+    let suma = 0;
+    for (let i = 0; i < 10; i++) suma += parseInt(d[i], 10) * pesos[i];
+    let dv = 11 - (suma % 11);
+    if (dv === 11) dv = 0;
+    if (dv === 10) return "el número ingresado no genera un dígito verificador válido";
+    if (dv !== parseInt(d[10], 10))
+      return "el dígito verificador no corresponde (debería ser " + dv + ")";
+    return null;
+  }
+
+  // Mascara en vivo + feedback debajo del campo
+  document.getElementById("cuit").addEventListener("input", function(){
+    this.value = formatearCuit(this.value);
+    const d = soloDigitos(this.value);
+    const est = document.getElementById("cuitEstado");
+    if (d.length === 0){ est.textContent = ""; est.className = "estado-cuit"; }
+    else if (d.length < 11){
+      est.textContent = "CUIT parcial: se buscará por “empieza con”.";
+      est.className = "estado-cuit neutro";
+    } else {
+      const err = validarCuitCompleto(d);
+      if (err === null){ est.textContent = "✓ CUIT válido"; est.className = "estado-cuit bien"; }
+      else { est.textContent = "✗ CUIT inválido: " + err; est.className = "estado-cuit mal"; }
+    }
+  });
+
+  /* ================= CU03 - Buscar Responsable de Pago ================= */
   async function buscar(){
     const razon = document.getElementById("razon").value.trim();
     const cuit  = document.getElementById("cuit").value.trim();
+
+    // Validacion: si el CUIT esta completo (11 digitos), debe ser valido
+    const dCuit = soloDigitos(cuit);
+    if (dCuit.length === 11){
+      const err = validarCuitCompleto(dCuit);
+      if (err !== null){
+        abrirCartel("CUIT inválido",
+          "El CUIT ingresado no es válido: " + err + ".",
+          true, () => document.getElementById("cuit").focus());
+        return;
+      }
+    }
     const url = API + "?razonSocial=" + encodeURIComponent(razon) + "&cuit=" + encodeURIComponent(cuit);
     const filas = document.getElementById("filas");
     try{
@@ -170,13 +438,14 @@
     }
   }
 
-  // CU14: Conserje presiona "BORRAR" -> prepararBaja(idResponsable)
+  /* ================= CU14 ================= */
+  // Conserje presiona "BORRAR" -> prepararBaja(idResponsable)
   async function solicitarBaja(id){
     try{
       const resp = await fetch(API + "/" + id + "/preparar");
       const v = await resp.json();
-      if(v.puedeEliminarse) abrirModalConfirmar(id, v.mensaje);   // mostrarConfirmacionEliminacion
-      else abrirModalError(v.mensaje);                            // mostrarError
+      if(v.puedeEliminarse) abrirModalConfirmar(id, v.mensaje);            // paso 2 (ELIMINAR/CANCELAR)
+      else abrirCartel("No es posible eliminar", v.mensaje, true, null);   // 2.A (cualquier tecla)
     }catch(e){ mostrarToast("Error de conexión con el backend.", false); }
   }
 
@@ -189,29 +458,59 @@
     document.getElementById("modalAcciones").innerHTML =
       '<button class="btn-cancelar" onclick="cerrarModal()">CANCELAR</button>' +
       '<button class="btn-eliminar" onclick="eliminar()">ELIMINAR</button>';
+    document.getElementById("modal").onclick = null;
     document.getElementById("overlay").classList.add("activo");
+    // Requerimiento especial: <Enter> y el click sobre el foco tienen el mismo efecto
+    setTimeout(() => document.querySelector("#modalAcciones .btn-cancelar").focus(), 30);
   }
 
-  function abrirModalError(mensaje){
+  /* Cartel estilo enunciado: sin botones, se cierra con CUALQUIER TECLA o click
+     ("El actor presiona cualquier tecla" - pasos 2.A.1 y 4 del CU14). */
+  let modoCartel = false;
+  let cartelAlCerrar = null;
+
+  function abrirCartel(titulo, mensaje, esError, alCerrar){
     seleccionado = null;
-    document.getElementById("modal").className = "modal error";
-    document.getElementById("modalIco").textContent = "✕";
-    document.getElementById("modalTitulo").textContent = "No es posible eliminar";
-    document.getElementById("modalMsg").textContent = mensaje;
-    document.getElementById("modalAcciones").innerHTML =
-      '<button class="btn-cerrar" onclick="cerrarModal()">ENTENDIDO</button>';
+    modoCartel = true;
+    cartelAlCerrar = alCerrar || null;
+    const modal = document.getElementById("modal");
+    modal.className = "modal " + (esError ? "error" : "confirmar");
+    document.getElementById("modalIco").textContent = esError ? "✕" : "✓";
+    document.getElementById("modalTitulo").textContent = titulo;
+    const msg = document.getElementById("modalMsg");
+    msg.className = "msg centrado";
+    msg.textContent = mensaje;
+    document.getElementById("modalAcciones").innerHTML = "";
+    modal.onclick = cerrarCartel;
     document.getElementById("overlay").classList.add("activo");
   }
 
-  // CU14: Actor confirma ELIMINAR -> confirmarEliminacion(idResponsable) (baja lógica)
+  function cerrarCartel(){
+    document.getElementById("overlay").classList.remove("activo");
+    document.getElementById("modal").onclick = null;
+    document.getElementById("modalMsg").className = "msg";
+    modoCartel = false;
+    const cb = cartelAlCerrar;
+    cartelAlCerrar = null;
+    if (cb) cb();
+  }
+
+  // Cualquier tecla cierra el cartel; Escape cancela la confirmacion
+  document.addEventListener("keydown", e => {
+    if (!document.getElementById("overlay").classList.contains("activo")) return;
+    if (modoCartel){ e.preventDefault(); cerrarCartel(); }
+    else if (e.key === "Escape") cerrarModal();
+  });
+
+  // Actor confirma ELIMINAR -> confirmarEliminacion(idResponsable) (baja lógica)
   async function eliminar(){
     if(seleccionado === null) return;
     try{
       const resp = await fetch(API + "/" + seleccionado + "/eliminar", { method:"POST" });
       const r = await resp.json();
       cerrarModal();
-      mostrarToast(r.mensaje, r.exito);   // "Eliminado."
-      if(r.exito) buscar();
+      if(r.exito) abrirCartel("Baja realizada", r.mensaje, false, () => buscar());  // paso 3-4 del CU14
+      else abrirCartel("No es posible eliminar", r.mensaje, true, null);
     }catch(e){ cerrarModal(); mostrarToast("Error de conexión con el backend.", false); }
   }
 
@@ -224,7 +523,7 @@
     const t = document.getElementById("toast");
     t.textContent = texto;
     t.className = "toast ver " + (ok ? "ok" : "mal");
-    setTimeout(()=> t.className = "toast " + (ok ? "ok" : "mal"), 4200);
+    setTimeout(()=> t.className = "toast " + (ok ? "ok" : "mal"), 5200);
   }
 
   function escapar(s){
@@ -234,7 +533,8 @@
   }
 
   document.getElementById("overlay").addEventListener("click", e => {
-    if(e.target.id === "overlay") cerrarModal();
+    if(e.target.id !== "overlay") return;
+    if (modoCartel) cerrarCartel(); else cerrarModal();
   });
 </script>
 </body>
