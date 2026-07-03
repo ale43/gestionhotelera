@@ -1,0 +1,17 @@
+# Compilados / build
+target/
+*.class
+
+# NetBeans
+nbproject/private/
+nbactions.xml
+nb-configuration.xml
+build/
+dist/
+
+# Sistema operativo
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
