@@ -5,16 +5,51 @@
     <artifactId>gestionhotelera</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>24</maven.compiler.release>
         <exec.mainClass>isi.deso.gestionhotelera.Gestionhotelera</exec.mainClass>
     </properties>
-<dependencies>
+
+    <dependencies>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>42.7.3</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+              Las versiones de los plugins se fijan a proposito.
+
+              Sin esta seccion Maven usa las de su super-POM, y ahi el
+              maven-compiler-plugin es la 3.1: una version anterior a la opcion
+              "release", que por lo tanto la ignora y compila con source/target
+              1.5, fallando con "Source option 5 is no longer supported".
+
+              NetBeans no lo sufre porque inyecta por su cuenta una version
+              moderna del plugin, pero desde la linea de comandos no hay quien lo
+              haga. Fijandolas aca, el proyecto compila igual en cualquier
+              entorno: NetBeans, consola, Windows o Linux.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+            </plugin>
+
+            <!-- Permite ejecutar el proyecto con:  mvn compile exec:java  -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <mainClass>${exec.mainClass}</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
