@@ -28,7 +28,7 @@ import java.util.Map;
  *   GET  /api/conserjes                        -> listar usuarios
  *   POST /api/conserjes    (usuario=&clave=)   -> alta de usuario
  *   POST /api/conserjes/eliminar (usuario=)    -> baja de usuario
- *   GET  /api/responsables?razonSocial=&cuit=  -> buscar (CU03)
+ *   GET  /api/responsables?razonSocial=&cuit=&documento=  -> buscar (CU03)
  *   GET  /api/responsables/{id}/preparar       -> prepararBaja(id)
  *   POST /api/responsables/{id}/eliminar       -> confirmarEliminacion(id)  (baja logica)
  */
@@ -131,7 +131,8 @@ public class ServidorRest {
         try {
             if (seg.length == 0 && "GET".equalsIgnoreCase(metodo)) {
                 Map<String,String> q = parsearQuery(ex.getRequestURI().getRawQuery());
-                List<ResponsableDTO> lista = controlador.buscar(q.get("razonSocial"), q.get("cuit"));
+                List<ResponsableDTO> lista = controlador.buscar(
+                        q.get("razonSocial"), q.get("cuit"), q.get("documento"));
                 responderJson(ex, 200, Json.deLista(lista));
                 return;
             }

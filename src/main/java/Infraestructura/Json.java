@@ -30,6 +30,7 @@ public final class Json {
             + "\"idResponsable\":" + r.getIdResponsable() + ","
             + "\"razonSocial\":\"" + escapar(r.getRazonSocial()) + "\","
             + "\"cuit\":\""        + escapar(r.getCuit())        + "\","
+            + "\"nroDocumento\":\""+ escapar(r.getNroDocumento())+ "\","
             + "\"direccion\":\""   + escapar(r.getDireccion())   + "\","
             + "\"telefono\":\""    + escapar(r.getTelefono())    + "\","
             + "\"estado\":\""      + escapar(r.getEstado())      + "\""

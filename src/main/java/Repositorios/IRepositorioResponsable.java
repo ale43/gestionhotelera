@@ -6,5 +6,15 @@ import java.util.List;
 public interface IRepositorioResponsable {
     ResponsableDePago buscarPorId(Integer idResponsable);
     void actualizar(ResponsableDePago responsable);
-    List<ResponsableDePago> buscarPorCriterios(String razonSocial, String cuit);
+
+    /**
+     * CU03 — Buscar Responsable de Pago.
+     * Los criterios vacíos o nulos no filtran.
+     *
+     * @param razonSocial texto que debe CONTENER la razón social (jurídica)
+     *                    o "apellido, nombre" (física)
+     * @param cuit        CUIT por el que debe EMPEZAR (se ignoran guiones/puntos)
+     * @param documento   nro. de documento que debe CONTENER (sólo persona física)
+     */
+    List<ResponsableDePago> buscarPorCriterios(String razonSocial, String cuit, String documento);
 }

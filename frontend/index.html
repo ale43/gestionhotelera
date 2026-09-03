@@ -156,13 +156,19 @@
       <div class="cuerpo">
         <div class="form">
           <div class="campo">
-            <label for="razon">Razón Social / Apellido (empieza con)</label>
-            <input id="razon" type="text" placeholder="EJ: TURISMO" autocomplete="off">
+            <label for="razon">Razón Social / Apellido (contiene)</label>
+            <input id="razon" type="text" placeholder="EJ: PEPE" autocomplete="off">
+            <small class="estado-cuit neutro">Alcanza con una parte del nombre.</small>
           </div>
           <div class="campo">
             <label for="cuit">CUIT (XX-XXXXXXXX-X)</label>
             <input id="cuit" type="text" placeholder="EJ: 30-12345678-1" autocomplete="off" inputmode="numeric">
             <small id="cuitEstado" class="estado-cuit"></small>
+          </div>
+          <div class="campo">
+            <label for="documento">Documento / DNI (contiene)</label>
+            <input id="documento" type="text" placeholder="EJ: 31222333" autocomplete="off" inputmode="numeric" maxlength="11">
+            <small class="estado-cuit neutro">Sólo personas físicas.</small>
           </div>
           <button class="btn-buscar" onclick="buscar()">Buscar</button>
         </div>
@@ -173,9 +179,9 @@
       <h2><span class="tag">CU14</span> Resultados — seleccione para dar de baja</h2>
       <div class="cuerpo" style="padding-top:8px">
         <table>
-          <thead><tr><th>Razón Social</th><th>CUIT</th><th>Domicilio</th><th></th></tr></thead>
+          <thead><tr><th>Razón Social</th><th>CUIT</th><th>Documento</th><th>Domicilio</th><th></th></tr></thead>
           <tbody id="filas">
-            <tr><td colspan="4" class="vacio">Presione “Buscar” para listar los responsables de pago.</td></tr>
+            <tr><td colspan="5" class="vacio">Presione “Buscar” para listar los responsables de pago.</td></tr>
           </tbody>
         </table>
       </div>
@@ -272,7 +278,7 @@
     document.getElementById("sesion").style.display = "none";
     document.getElementById("vistaLogin").style.display = "flex";
     document.getElementById("filas").innerHTML =
-      '<tr><td colspan="4" class="vacio">Presione “Buscar” para listar los responsables de pago.</td></tr>';
+      '<tr><td colspan="5" class="vacio">Presione “Buscar” para listar los responsables de pago.</td></tr>';
   }
 
   // Enter en el login dispara INGRESAR (requisito: click y <Enter> mismo efecto)
@@ -399,10 +405,21 @@
     }
   });
 
+  // El documento acepta solo digitos.
+  document.getElementById("documento").addEventListener("input", function(){
+    this.value = soloDigitos(this.value);
+  });
+
+  // <Enter> en cualquier criterio dispara la busqueda.
+  ["razon","cuit","documento"].forEach(id => {
+    document.getElementById(id).addEventListener("keydown", e => { if (e.key === "Enter") buscar(); });
+  });
+
   /* ================= CU03 - Buscar Responsable de Pago ================= */
   async function buscar(){
     const razon = document.getElementById("razon").value.trim();
     const cuit  = document.getElementById("cuit").value.trim();
+    const doc   = document.getElementById("documento").value.trim();
 
     // Validacion: si el CUIT esta completo (11 digitos), debe ser valido
     const dCuit = soloDigitos(cuit);
@@ -415,19 +432,22 @@
         return;
       }
     }
-    const url = API + "?razonSocial=" + encodeURIComponent(razon) + "&cuit=" + encodeURIComponent(cuit);
+    const url = API + "?razonSocial=" + encodeURIComponent(razon)
+                    + "&cuit="        + encodeURIComponent(cuit)
+                    + "&documento="   + encodeURIComponent(doc);
     const filas = document.getElementById("filas");
     try{
       const resp = await fetch(url);
       const lista = await resp.json();
       if(!lista.length){
-        filas.innerHTML = '<tr><td colspan="4" class="vacio">No existen responsables de pago para los criterios de búsqueda.</td></tr>';
+        filas.innerHTML = '<tr><td colspan="5" class="vacio">No existen responsables de pago para los criterios de búsqueda.</td></tr>';
         return;
       }
       filas.innerHTML = lista.map(r => `
         <tr>
           <td>${escapar(r.razonSocial)}</td>
           <td class="cuit">${escapar(r.cuit)}</td>
+          <td class="cuit">${r.nroDocumento ? escapar(r.nroDocumento) : "—"}</td>
           <td class="dir">${escapar(r.direccion)}</td>
           <td style="text-align:right">
             <button class="btn-baja" onclick="solicitarBaja(${r.idResponsable})">Dar de baja</button>

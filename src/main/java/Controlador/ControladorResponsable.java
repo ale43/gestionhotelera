@@ -46,12 +46,18 @@ public class ControladorResponsable {
         return new ResultadoBajaDTO(true, "Eliminado.");
     }
 
-    public List<ResponsableDTO> buscar(String razonSocial, String cuit) {
+    /** CU03 — Buscar Responsable de Pago por razón social/apellido, CUIT y/o documento. */
+    public List<ResponsableDTO> buscar(String razonSocial, String cuit, String documento) {
         IRepositorioResponsable repoResp = RepositorioFactory.getRepositorioResponsable();
         List<ResponsableDTO> dtos = new ArrayList<>();
-        for (ResponsableDePago r : repoResp.buscarPorCriterios(razonSocial, cuit)) {
+        for (ResponsableDePago r : repoResp.buscarPorCriterios(razonSocial, cuit, documento)) {
             dtos.add(r.toDTO());
         }
         return dtos;
+    }
+
+    /** Sobrecarga histórica (sin documento), para no romper llamadores viejos. */
+    public List<ResponsableDTO> buscar(String razonSocial, String cuit) {
+        return buscar(razonSocial, cuit, null);
     }
 }

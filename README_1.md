@@ -40,8 +40,18 @@ contra la tabla `conserje`) o directamente en la base.
 
 - **CU01 — Autenticar Usuario**: login validado contra la tabla `conserje`,
   con los mensajes de error del enunciado.
-- **CU03 — Buscar Responsable de Pago** (soporte): búsqueda por razón social y
-  CUIT con criterio "empieza con".
+- **CU03 — Buscar Responsable de Pago** (soporte): tres criterios combinables,
+  resueltos en SQL (no se trae la tabla entera a memoria):
+  - *Razón social / apellido*: **contiene** (`LIKE '%texto%'`), sin distinguir
+    mayúsculas ni acentos — escribiendo `pepe` aparece `RESPONSABLE PEPE S.R.L.`
+  - *CUIT*: **empieza con** (criterio del enunciado), comparando sólo dígitos:
+    da igual escribirlo con o sin guiones.
+  - *Documento / DNI*: **contiene**; sólo aplica a Persona Física.
+
+  El nro. de documento se persiste en `responsable_de_pago.nro_documento`
+  (con `tipo_documento`). `InicializadorBD` agrega las columnas con
+  `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` y, para las personas físicas ya
+  cargadas sin documento, lo deriva del CUIT (dígitos 3 a 10).
 - **CU14 — Dar de baja Responsable de Pago**: baja **lógica**
   (`estado = 'ELIMINADO'`), bloqueada si la firma tiene facturas asociadas.
   Carteles idénticos a la especificación, cierre con cualquier tecla.
