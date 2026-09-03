@@ -30,7 +30,6 @@ public final class Json {
             + "\"idResponsable\":" + r.getIdResponsable() + ","
             + "\"razonSocial\":\"" + escapar(r.getRazonSocial()) + "\","
             + "\"cuit\":\""        + escapar(r.getCuit())        + "\","
-            + "\"nroDocumento\":\""+ escapar(r.getNroDocumento())+ "\","
             + "\"direccion\":\""   + escapar(r.getDireccion())   + "\","
             + "\"telefono\":\""    + escapar(r.getTelefono())    + "\","
             + "\"estado\":\""      + escapar(r.getEstado())      + "\""
@@ -47,13 +46,13 @@ public final class Json {
         String resp = (v.getResponsable()==null) ? "null" : de(v.getResponsable());
         return "{"
             + "\"puedeEliminarse\":" + v.isPuedeEliminarse() + ","
-            + "\"mensaje\":\""       + escapar(v.getMensaje()) + "\","
+            + "\"codigo\":\""        + v.getCodigo() + "\","
             + "\"responsable\":"     + resp
             + "}";
     }
 
     public static String de(ResultadoBajaDTO r) {
-        return "{\"exito\":" + r.isExito() + ",\"mensaje\":\"" + escapar(r.getMensaje()) + "\"}";
+        return "{\"exito\":" + r.isExito() + ",\"codigo\":\"" + r.getCodigo() + "\"}";
     }
 
     public static String de(ConserjeDTO c) {

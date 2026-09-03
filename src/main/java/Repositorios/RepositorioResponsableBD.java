@@ -19,16 +19,14 @@ import java.util.List;
  * PersonaJuridica), como indica la nota del diagrama de secuencia.
  *
  * Criterios de búsqueda (CU03):
- *   - razonSocial / apellido : CONTIENE (case e insensible a acentos)
- *   - cuit                   : EMPIEZA CON, comparando sólo dígitos
- *   - documento (DNI)        : CONTIENE, comparando sólo dígitos
+ *   - razonSocial : CONTIENE, sin distinguir mayúsculas ni acentos
+ *   - cuit        : EMPIEZA CON, comparando sólo dígitos
  * El filtrado se resuelve en SQL (no se trae toda la tabla a memoria).
  */
 public class RepositorioResponsableBD implements IRepositorioResponsable {
 
     private static final String SELECT_BASE =
-        "SELECT r.id_responsable, r.tipo, r.estado, r.razon_social, r.nombre, r.apellido, " +
-        "       r.cuit, r.nro_documento, r.tipo_documento, r.telefono, " +
+        "SELECT r.id_responsable, r.tipo, r.estado, r.razon_social, r.nombre, r.apellido, r.cuit, r.telefono, " +
         "       d.calle, d.numero, d.departamento, d.piso, d.cod_postal, d.localidad, d.provincia, d.pais " +
         "FROM responsable_de_pago r LEFT JOIN direccion d ON r.id_direccion = d.id_direccion ";
 
@@ -61,10 +59,9 @@ public class RepositorioResponsableBD implements IRepositorioResponsable {
     }
 
     @Override
-    public List<ResponsableDePago> buscarPorCriterios(String razonSocial, String cuit, String documento) {
-        String rsCrit  = razonSocial == null ? "" : razonSocial.trim();
-        String cuCrit  = soloDigitos(cuit);
-        String docCrit = soloDigitos(documento);
+    public List<ResponsableDePago> buscarPorCriterios(String razonSocial, String cuit) {
+        String rsCrit = razonSocial == null ? "" : razonSocial.trim();
+        String cuCrit = soloDigitos(cuit);
 
         StringBuilder sql = new StringBuilder(SELECT_BASE + "WHERE r.estado = 'ACTIVO'");
         List<String> params = new ArrayList<>();
@@ -83,12 +80,6 @@ public class RepositorioResponsableBD implements IRepositorioResponsable {
         if (!cuCrit.isEmpty()) {
             sql.append(" AND ").append(soloDigitosSql("r.cuit")).append(" LIKE ?");
             params.add(escaparLike(cuCrit) + "%");
-        }
-
-        // DNI / documento: "contiene", ignorando puntos y guiones.
-        if (!docCrit.isEmpty()) {
-            sql.append(" AND ").append(soloDigitosSql("r.nro_documento")).append(" LIKE ?");
-            params.add("%" + escaparLike(docCrit) + "%");
         }
 
         sql.append(" ORDER BY r.id_responsable");
@@ -113,8 +104,7 @@ public class RepositorioResponsableBD implements IRepositorioResponsable {
     /** Expresión SQL que pasa la columna a mayúsculas y le quita los acentos. */
     private static String sinAcentos(String expr) {
         return "translate(upper(" + expr + "), "
-             + "'ÁÀÄÂÃÉÈËÊÍÌÏÎ"
-             + "ÓÒÖÔÕÚÙÜÛÑÇ', "
+             + "'ÁÀÄÂÃÉÈËÊÍÌÏÎÓÒÖÔÕÚÙÜÛÑÇ', "
              + "'AAAAAEEEEIIIIOOOOOUUUUNC')";
     }
 
@@ -158,8 +148,7 @@ public class RepositorioResponsableBD implements IRepositorioResponsable {
         if ("JURIDICA".equals(tipo)) {
             r = new PersonaJuridica(id, rs.getString("razon_social"), cuit, dir, tel);
         } else {
-            r = new PersonaFisica(id, rs.getString("nombre"), rs.getString("apellido"), cuit,
-                                  rs.getString("nro_documento"), rs.getString("tipo_documento"), dir, tel);
+            r = new PersonaFisica(id, rs.getString("nombre"), rs.getString("apellido"), cuit, dir, tel);
         }
         r.setEstado(rs.getString("estado"));
         return r;

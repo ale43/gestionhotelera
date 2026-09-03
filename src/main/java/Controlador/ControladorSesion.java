@@ -1,10 +1,16 @@
 package Controlador;
 
+import DTOS.CodigoResultado;
 import DTOS.ConserjeDTO;
 import DTOS.ResultadoBajaDTO;
 import Repositorios.IRepositorioConserje;
 import Repositorios.RepositorioFactory;
 import java.util.List;
+
+/**
+ * CU01 (autenticar) y administración de conserjes.
+ * Devuelve códigos, nunca leyendas de pantalla: los textos los arma la vista.
+ */
 public class ControladorSesion {
 
     public boolean autenticar(String nombre, String password) {
@@ -23,45 +29,43 @@ public class ControladorSesion {
         IRepositorioConserje repo = RepositorioFactory.getRepositorioConserje();
 
         if (nombre == null || nombre.isBlank() || password == null || password.isBlank()) {
-            return new ResultadoBajaDTO(false, "Debe completar el nombre de usuario y la contraseña.");
+            return new ResultadoBajaDTO(false, CodigoResultado.DATOS_INCOMPLETOS);
         }
         String n = nombre.trim();
         if (!n.matches("[a-zA-Z0-9]{3,30}")) {
-            return new ResultadoBajaDTO(false,
-                    "El nombre de usuario debe tener entre 3 y 30 caracteres alfanumericos, sin espacios.");
+            return new ResultadoBajaDTO(false, CodigoResultado.NOMBRE_USUARIO_INVALIDO);
         }
-        String errorClave = validarPassword(password);
+        CodigoResultado errorClave = validarPassword(password);
         if (errorClave != null) {
             return new ResultadoBajaDTO(false, errorClave);
         }
         if (repo.existeNombre(n)) {
-            return new ResultadoBajaDTO(false, "¡CUIDADO! El nombre de usuario ya existe en el sistema.");
+            return new ResultadoBajaDTO(false, CodigoResultado.USUARIO_YA_EXISTE);
         }
         boolean ok = repo.crear(n, password);
-        if (!ok) return new ResultadoBajaDTO(false, "No se pudo crear el usuario.");
-        return new ResultadoBajaDTO(true,
-                "El usuario " + n.toLowerCase() + " ha sido cargado al sistema.");
+        if (!ok) return new ResultadoBajaDTO(false, CodigoResultado.ERROR_INESPERADO);
+        return new ResultadoBajaDTO(true, CodigoResultado.USUARIO_CREADO);
     }
 
     public ResultadoBajaDTO eliminarUsuario(String nombre) {
         IRepositorioConserje repo = RepositorioFactory.getRepositorioConserje();
 
         if (nombre == null || nombre.isBlank()) {
-            return new ResultadoBajaDTO(false, "Debe indicar el usuario a eliminar.");
+            return new ResultadoBajaDTO(false, CodigoResultado.DATOS_INCOMPLETOS);
         }
         if (!repo.existeNombre(nombre.trim())) {
-            return new ResultadoBajaDTO(false, "El usuario no existe en el sistema.");
+            return new ResultadoBajaDTO(false, CodigoResultado.USUARIO_NO_EXISTE);
         }
         if (repo.contar() <= 1) {
-            return new ResultadoBajaDTO(false,
-                    "No se puede eliminar: debe existir al menos un usuario en el sistema.");
+            return new ResultadoBajaDTO(false, CodigoResultado.ULTIMO_USUARIO);
         }
         boolean ok = repo.eliminar(nombre.trim());
-        if (!ok) return new ResultadoBajaDTO(false, "No se pudo eliminar el usuario.");
-        return new ResultadoBajaDTO(true,
-                "El usuario " + nombre.trim().toLowerCase() + " ha sido eliminado del sistema.");
+        if (!ok) return new ResultadoBajaDTO(false, CodigoResultado.ERROR_INESPERADO);
+        return new ResultadoBajaDTO(true, CodigoResultado.USUARIO_ELIMINADO);
     }
-    private String validarPassword(String password) {
+
+    /** Regla de contraseña del CU01. Devuelve null si es válida. */
+    private CodigoResultado validarPassword(String password) {
         int letras = 0;
         StringBuilder digitos = new StringBuilder();
         for (char c : password.toCharArray()) {
@@ -69,7 +73,7 @@ public class ControladorSesion {
             else if (Character.isDigit(c)) digitos.append(c);
         }
         if (letras < 5 || digitos.length() < 3) {
-            return "La contraseña debe tener al menos 5 letras y 3 números.";
+            return CodigoResultado.PASSWORD_LONGITUD;
         }
         String d = digitos.toString();
         boolean todosIguales = true, creciente = true, decreciente = true;
@@ -79,8 +83,7 @@ public class ControladorSesion {
             if (d.charAt(i) - d.charAt(i - 1) != -1) decreciente = false;
         }
         if (todosIguales || creciente || decreciente) {
-            return "Los números de la contraseña no pueden ser iguales ni consecutivos "
-                 + "en forma creciente o decreciente.";
+            return CodigoResultado.PASSWORD_NUMEROS_CONSECUTIVOS;
         }
         return null;
     }

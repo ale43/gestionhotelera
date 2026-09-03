@@ -33,15 +33,6 @@ public final class InicializadorBD {
                 "  razon_social VARCHAR(150), nombre VARCHAR(80), apellido VARCHAR(80)," +
                 "  cuit VARCHAR(20), telefono VARCHAR(40), id_direccion INT," +
                 "  CONSTRAINT fk_resp_dir FOREIGN KEY (id_direccion) REFERENCES direccion(id_direccion))");
-            // Documento del responsable (sólo Persona Fisica). ADD COLUMN IF NOT EXISTS
-            // permite actualizar bases ya creadas sin tener que borrarlas.
-            st.execute("ALTER TABLE responsable_de_pago ADD COLUMN IF NOT EXISTS nro_documento VARCHAR(30)");
-            st.execute("ALTER TABLE responsable_de_pago ADD COLUMN IF NOT EXISTS tipo_documento VARCHAR(15)");
-            // Para las fisicas ya cargadas sin documento, se deriva del CUIT (digitos 3 a 10).
-            st.execute("UPDATE responsable_de_pago SET nro_documento = substring(translate(cuit,'-. ','') from 3 for 8), " +
-                       "       tipo_documento = 'DNI' " +
-                       " WHERE tipo = 'FISICA' AND (nro_documento IS NULL OR nro_documento = '') AND cuit IS NOT NULL");
-
             st.execute(
                 "CREATE TABLE IF NOT EXISTS factura (" +
                 "  id_factura INT PRIMARY KEY, fecha DATE, cuit_responsable VARCHAR(20), monto DECIMAL(12,2))");
@@ -141,13 +132,13 @@ public final class InicializadorBD {
             "(4,'RIVADAVIA','333','','','3000','SANTA FE','SANTA FE','ARGENTINA')," +
             "(5,'BELGRANO','2020','','1','3000','SANTA FE','SANTA FE','ARGENTINA')");
 
-        st.execute("INSERT INTO responsable_de_pago (id_responsable, tipo, estado, razon_social, nombre, apellido, cuit, nro_documento, tipo_documento, telefono, id_direccion) VALUES " +
-            "(1,'JURIDICA','ACTIVO','HOTELERIA DEL LITORAL S.A.',NULL,NULL,'30-12345678-9',NULL,NULL,'0342-4550000',1)," +
-            "(2,'JURIDICA','ACTIVO','TURISMO PARANA S.R.L.',NULL,NULL,'30-99887766-5',NULL,NULL,'0343-4231122',2)," +
-            "(3,'JURIDICA','ACTIVO','CONSULTORA DEL CENTRO S.A.S.',NULL,NULL,'27-33445566-8',NULL,NULL,'0342-4889900',3)," +
-            "(4,'FISICA','ACTIVO',NULL,'JUAN','PEREZ','20-31222333-4','31222333','DNI','0342-4567788',4)," +
+        st.execute("INSERT INTO responsable_de_pago (id_responsable, tipo, estado, razon_social, nombre, apellido, cuit, telefono, id_direccion) VALUES " +
+            "(1,'JURIDICA','ACTIVO','HOTELERIA DEL LITORAL S.A.',NULL,NULL,'30-12345678-9','0342-4550000',1)," +
+            "(2,'JURIDICA','ACTIVO','TURISMO PARANA S.R.L.',NULL,NULL,'30-99887766-5','0343-4231122',2)," +
+            "(3,'JURIDICA','ACTIVO','CONSULTORA DEL CENTRO S.A.S.',NULL,NULL,'27-33445566-8','0342-4889900',3)," +
+            "(4,'FISICA','ACTIVO',NULL,'JUAN','PEREZ','20-31222333-4','0342-4567788',4)," +
             // Caso de prueba de la busqueda "contiene": se encuentra escribiendo "PEPE".
-            "(5,'FISICA','ACTIVO',NULL,'JOSE','PEPE','20-28444555-1','28444555','DNI','0342-4551234',5)");
+            "(5,'JURIDICA','ACTIVO','RESPONSABLE PEPE S.R.L.',NULL,NULL,'30-55666777-2','0342-4551234',5)");
 
         st.execute("INSERT INTO factura (id_factura, fecha, cuit_responsable, monto, tipo, estado) VALUES " +
             "(1001,'2025-03-10','30-12345678-9',154300.00,'A','PAGADA')," +

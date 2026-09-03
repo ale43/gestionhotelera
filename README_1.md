@@ -40,21 +40,24 @@ contra la tabla `conserje`) o directamente en la base.
 
 - **CU01 — Autenticar Usuario**: login validado contra la tabla `conserje`,
   con los mensajes de error del enunciado.
-- **CU03 — Buscar Responsable de Pago** (soporte): tres criterios combinables,
-  resueltos en SQL (no se trae la tabla entera a memoria):
-  - *Razón social / apellido*: **contiene** (`LIKE '%texto%'`), sin distinguir
-    mayúsculas ni acentos — escribiendo `pepe` aparece `RESPONSABLE PEPE S.R.L.`
-  - *CUIT*: **empieza con** (criterio del enunciado), comparando sólo dígitos:
+- **CU03 — Buscar Responsable de Pago** (soporte): los dos criterios del
+  enunciado (*Razón social* y *CUIT*), combinables y resueltos en SQL — no se
+  trae la tabla entera a memoria.
+  - *Razón social*: **contiene** (`LIKE '%texto%'`), sin distinguir mayúsculas
+    ni acentos. **Desvío declarado**: el enunciado pide "empieza con"; se
+    amplió a "contiene" por usabilidad, ya que el conserje puede no recordar
+    cómo empieza la razón social (escribiendo `pepe` aparece
+    `RESPONSABLE PEPE S.R.L.`). Volver al criterio literal es cambiar el
+    patrón en `RepositorioResponsableBD.contiene()`.
+  - *CUIT*: **empieza con**, tal cual el enunciado, comparando sólo dígitos:
     da igual escribirlo con o sin guiones.
-  - *Documento / DNI*: **contiene**; sólo aplica a Persona Física.
 
-  El nro. de documento se persiste en `responsable_de_pago.nro_documento`
-  (con `tipo_documento`). `InicializadorBD` agrega las columnas con
-  `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` y, para las personas físicas ya
-  cargadas sin documento, lo deriva del CUIT (dígitos 3 a 10).
+  El Responsable de Pago se identifica **sólo por razón social y CUIT**: el
+  tipo y número de documento pertenecen al **Huésped** (CU02/CU09/CU10/CU11),
+  que es otra entidad.
 - **CU14 — Dar de baja Responsable de Pago**: baja **lógica**
   (`estado = 'ELIMINADO'`), bloqueada si la firma tiene facturas asociadas.
-  Carteles idénticos a la especificación, cierre con cualquier tecla.
+  Carteles con el texto exacto de la especificación, cierre con cualquier tecla.
 - **Validación de CUIT**: máscara `XX-XXXXXXXX-X`, prefijos válidos y dígito
   verificador (módulo 11).
 - **Administración de usuarios**: alta con la regla de contraseña del CU01
@@ -78,6 +81,12 @@ Navegador → ServidorRest → Controlador → IRepositorio (interfaz) → Repos
 - **Factory**: `RepositorioFactory` centraliza la creación de repositorios.
 - **DTO**: la capa de presentación nunca expone entidades (ni contraseñas).
 - **Controller (GRASP) sin estado**: re-consulta la entidad antes de mutarla.
+- **Los carteles viven en la capa de presentación**: ningún controlador ni
+  repositorio arma texto de pantalla. Los controladores devuelven un
+  `DTOS.CodigoResultado` (`PUEDE_ELIMINARSE`, `TIENE_FACTURAS`, `ELIMINADO`,
+  `CREDENCIALES_INVALIDAS`, …) junto con los datos, y el catálogo `MENSAJES`
+  de `frontend/index.html` compone la leyenda que ve el conserje. Cambiar un
+  cartel —o traducir el sistema— no toca el backend.
 - **Generalización**: `ResponsableDePago` (abstracta) → `PersonaFisica` /
   `PersonaJuridica`, mapeo a tabla única con columna discriminadora `tipo`.
 

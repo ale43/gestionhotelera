@@ -28,7 +28,7 @@ import java.util.Map;
  *   GET  /api/conserjes                        -> listar usuarios
  *   POST /api/conserjes    (usuario=&clave=)   -> alta de usuario
  *   POST /api/conserjes/eliminar (usuario=)    -> baja de usuario
- *   GET  /api/responsables?razonSocial=&cuit=&documento=  -> buscar (CU03)
+ *   GET  /api/responsables?razonSocial=&cuit=   -> buscar (CU03)
  *   GET  /api/responsables/{id}/preparar       -> prepararBaja(id)
  *   POST /api/responsables/{id}/eliminar       -> confirmarEliminacion(id)  (baja logica)
  */
@@ -59,7 +59,7 @@ public class ServidorRest {
         String metodo = ex.getRequestMethod();
         if ("OPTIONS".equalsIgnoreCase(metodo)) { responder(ex, 204, ""); return; }
         if (!"POST".equalsIgnoreCase(metodo)) {
-            responderJson(ex, 405, "{\"mensaje\":\"Metodo no permitido\"}");
+            responderJson(ex, 405, "{\"codigo\":\"METODO_NO_PERMITIDO\"}");
             return;
         }
         try {
@@ -69,16 +69,15 @@ public class ServidorRest {
 
             boolean ok = controladorSesion.autenticar(usuario, clave);
             if (ok) {
-                responderJson(ex, 200, "{\"exito\":true,\"nombre\":\""
+                // El texto del CU01 lo arma la vista: aca solo viaja el codigo.
+                responderJson(ex, 200, "{\"exito\":true,\"codigo\":\"AUTENTICADO\",\"nombre\":\""
                         + Json.escapar(usuario.trim().toUpperCase()) + "\"}");
             } else {
-                // Mensaje EXACTO del CU01 del enunciado
-                responderJson(ex, 200, "{\"exito\":false,"
-                        + "\"mensaje\":\"El usuario o la contrase\u00f1a no son v\u00e1lidos\"}");
+                responderJson(ex, 200, "{\"exito\":false,\"codigo\":\"CREDENCIALES_INVALIDAS\"}");
             }
         } catch (Exception e) {
-            responderJson(ex, 500, "{\"exito\":false,\"mensaje\":\""
-                    + Json.escapar(String.valueOf(e.getMessage())) + "\"}");
+            System.err.println("Error en /api/login: " + e.getMessage());
+            responderJson(ex, 500, "{\"exito\":false,\"codigo\":\"ERROR_INESPERADO\"}");
         }
     }
 
@@ -112,10 +111,10 @@ public class ServidorRest {
                 responderJson(ex, 200, Json.de(r));
                 return;
             }
-            responderJson(ex, 404, "{\"mensaje\":\"Recurso no encontrado\"}");
+            responderJson(ex, 404, "{\"codigo\":\"RECURSO_NO_ENCONTRADO\"}");
         } catch (Exception e) {
-            responderJson(ex, 500, "{\"exito\":false,\"mensaje\":\""
-                    + Json.escapar(String.valueOf(e.getMessage())) + "\"}");
+            System.err.println("Error en /api/conserjes: " + e.getMessage());
+            responderJson(ex, 500, "{\"exito\":false,\"codigo\":\"ERROR_INESPERADO\"}");
         }
     }
 
@@ -131,28 +130,28 @@ public class ServidorRest {
         try {
             if (seg.length == 0 && "GET".equalsIgnoreCase(metodo)) {
                 Map<String,String> q = parsearQuery(ex.getRequestURI().getRawQuery());
-                List<ResponsableDTO> lista = controlador.buscar(
-                        q.get("razonSocial"), q.get("cuit"), q.get("documento"));
+                List<ResponsableDTO> lista = controlador.buscar(q.get("razonSocial"), q.get("cuit"));
                 responderJson(ex, 200, Json.deLista(lista));
                 return;
             }
             if (seg.length == 2 && "GET".equalsIgnoreCase(metodo) && "preparar".equals(seg[1])) {
                 Integer id = parsearId(seg[0]);
-                if (id == null) { responderJson(ex, 400, "{\"mensaje\":\"Id invalido\"}"); return; }
+                if (id == null) { responderJson(ex, 400, "{\"codigo\":\"ID_INVALIDO\"}"); return; }
                 ResultadoVerificacionDTO v = controlador.prepararBaja(id);
                 responderJson(ex, 200, Json.de(v));
                 return;
             }
             if (seg.length == 2 && "POST".equalsIgnoreCase(metodo) && "eliminar".equals(seg[1])) {
                 Integer id = parsearId(seg[0]);
-                if (id == null) { responderJson(ex, 400, "{\"mensaje\":\"Id invalido\"}"); return; }
+                if (id == null) { responderJson(ex, 400, "{\"codigo\":\"ID_INVALIDO\"}"); return; }
                 ResultadoBajaDTO r = controlador.confirmarEliminacion(id);
                 responderJson(ex, 200, Json.de(r));
                 return;
             }
-            responderJson(ex, 404, "{\"mensaje\":\"Recurso no encontrado\"}");
+            responderJson(ex, 404, "{\"codigo\":\"RECURSO_NO_ENCONTRADO\"}");
         } catch (Exception e) {
-            responderJson(ex, 500, "{\"mensaje\":\"" + Json.escapar(String.valueOf(e.getMessage())) + "\"}");
+            System.err.println("Error en /api/responsables: " + e.getMessage());
+            responderJson(ex, 500, "{\"codigo\":\"ERROR_INESPERADO\"}");
         }
     }
 

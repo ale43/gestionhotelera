@@ -35,16 +35,9 @@ public abstract class ResponsableDePago {
     public abstract String getCuit();
     public abstract String getDenominacion();   // razón social o "apellido, nombre"
 
-    /**
-     * Nro. de documento. Sólo la Persona Física lo tiene: la Persona Jurídica
-     * se identifica únicamente por CUIT, por eso acá devuelve null y la
-     * subclase física lo redefine.
-     */
-    public String getNroDocumento() { return null; }
-
     /** Arma el DTO para la vista (res.toDTO() del diagrama). */
     public ResponsableDTO toDTO() {
-        return new ResponsableDTO(idResponsable, getDenominacion(), getCuit(), getNroDocumento(),
+        return new ResponsableDTO(idResponsable, getDenominacion(), getCuit(),
                                   direccion.enLinea(), telefono, estado);
     }
 }
