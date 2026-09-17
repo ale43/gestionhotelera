@@ -1,6 +1,5 @@
 package Entidades;
 
-/** Subclase Persona Física (por ej. un huésped que es responsable de su propia factura). */
 public class PersonaFisica extends ResponsableDePago {
 
     private String nombre;

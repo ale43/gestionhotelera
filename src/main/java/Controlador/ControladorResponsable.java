@@ -11,12 +11,6 @@ import Repositorios.RepositorioFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Controlador del CU03 (buscar) y del CU14 (dar de baja).
- *
- * No arma ningún texto de pantalla: devuelve un CodigoResultado y los datos.
- * Los carteles del enunciado los compone la capa de presentación.
- */
 public class ControladorResponsable {
 
     public ResultadoVerificacionDTO prepararBaja(Integer idResponsable) {
@@ -30,7 +24,7 @@ public class ControladorResponsable {
 
         boolean tieneFacturas = repoFact.existeFactura(res.getCuit());
 
-        if (tieneFacturas) {   // alt tieneFacturas == true
+        if (tieneFacturas) {
             return new ResultadoVerificacionDTO(false, CodigoResultado.TIENE_FACTURAS, res.toDTO());
         }
         return new ResultadoVerificacionDTO(true, CodigoResultado.PUEDE_ELIMINARSE, res.toDTO());
@@ -50,7 +44,6 @@ public class ControladorResponsable {
         return new ResultadoBajaDTO(true, CodigoResultado.ELIMINADO);
     }
 
-    /** CU03 — Buscar Responsable de Pago por razón social y/o CUIT. */
     public List<ResponsableDTO> buscar(String razonSocial, String cuit) {
         IRepositorioResponsable repoResp = RepositorioFactory.getRepositorioResponsable();
         List<ResponsableDTO> dtos = new ArrayList<>();

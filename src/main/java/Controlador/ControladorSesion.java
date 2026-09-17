@@ -7,10 +7,6 @@ import Repositorios.IRepositorioConserje;
 import Repositorios.RepositorioFactory;
 import java.util.List;
 
-/**
- * CU01 (autenticar) y administración de conserjes.
- * Devuelve códigos, nunca leyendas de pantalla: los textos los arma la vista.
- */
 public class ControladorSesion {
 
     public boolean autenticar(String nombre, String password) {
@@ -64,7 +60,6 @@ public class ControladorSesion {
         return new ResultadoBajaDTO(true, CodigoResultado.USUARIO_ELIMINADO);
     }
 
-    /** Regla de contraseña del CU01. Devuelve null si es válida. */
     private CodigoResultado validarPassword(String password) {
         int letras = 0;
         StringBuilder digitos = new StringBuilder();

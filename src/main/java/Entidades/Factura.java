@@ -3,7 +3,6 @@ package Entidades;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-
 public class Factura {
     private Integer idFactura;
     private LocalDate fecha;

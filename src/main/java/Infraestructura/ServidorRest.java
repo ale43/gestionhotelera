@@ -22,16 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Servidor REST con el HttpServer del JDK. Traduce HTTP -> Controladores.
- *   POST /api/login       (usuario=&clave=)   -> CU01 autenticar (tabla conserje)
- *   GET  /api/conserjes                        -> listar usuarios
- *   POST /api/conserjes    (usuario=&clave=)   -> alta de usuario
- *   POST /api/conserjes/eliminar (usuario=)    -> baja de usuario
- *   GET  /api/responsables?razonSocial=&cuit=   -> buscar (CU03)
- *   GET  /api/responsables/{id}/preparar       -> prepararBaja(id)
- *   POST /api/responsables/{id}/eliminar       -> confirmarEliminacion(id)  (baja logica)
- */
 public class ServidorRest {
 
     private static final String BASE = "/api/responsables";
@@ -53,7 +43,6 @@ public class ServidorRest {
         System.out.println("Servidor REST iniciado en http://localhost:" + puerto + "/");
     }
 
-    /** CU01 - Autenticar Usuario contra la tabla `conserje` (PostgreSQL). */
     private void manejarLogin(HttpExchange ex) throws IOException {
         agregarCors(ex);
         String metodo = ex.getRequestMethod();
@@ -69,7 +58,7 @@ public class ServidorRest {
 
             boolean ok = controladorSesion.autenticar(usuario, clave);
             if (ok) {
-                // El texto del CU01 lo arma la vista: aca solo viaja el codigo.
+
                 responderJson(ex, 200, "{\"exito\":true,\"codigo\":\"AUTENTICADO\",\"nombre\":\""
                         + Json.escapar(usuario.trim().toUpperCase()) + "\"}");
             } else {
@@ -81,7 +70,6 @@ public class ServidorRest {
         }
     }
 
-    /** Administracion de usuarios (tabla conserje): listar, alta, baja. */
     private void manejarConserjes(HttpExchange ex) throws IOException {
         agregarCors(ex);
         String metodo = ex.getRequestMethod();
@@ -91,20 +79,20 @@ public class ServidorRest {
         if (resto.startsWith("/")) resto = resto.substring(1);
 
         try {
-            // GET /api/conserjes -> listar
+
             if (resto.isEmpty() && "GET".equalsIgnoreCase(metodo)) {
                 List<ConserjeDTO> lista = controladorSesion.listarUsuarios();
                 responderJson(ex, 200, Json.deListaConserjes(lista));
                 return;
             }
-            // POST /api/conserjes -> alta (body: usuario=&clave=)
+
             if (resto.isEmpty() && "POST".equalsIgnoreCase(metodo)) {
                 Map<String, String> datos = parsearQuery(leerCuerpo(ex.getRequestBody()));
                 ResultadoBajaDTO r = controladorSesion.crearUsuario(datos.get("usuario"), datos.get("clave"));
                 responderJson(ex, 200, Json.de(r));
                 return;
             }
-            // POST /api/conserjes/eliminar -> baja (body: usuario=)
+
             if ("eliminar".equals(resto) && "POST".equalsIgnoreCase(metodo)) {
                 Map<String, String> datos = parsearQuery(leerCuerpo(ex.getRequestBody()));
                 ResultadoBajaDTO r = controladorSesion.eliminarUsuario(datos.get("usuario"));

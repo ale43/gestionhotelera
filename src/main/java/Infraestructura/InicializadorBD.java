@@ -5,21 +5,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-/**
- * Crea TODAS las tablas del modelo (si no existen) y carga datos de prueba.
- * - Las tablas del CU14 (direccion, responsable_de_pago, factura) ya existían: se
- *   mantienen y a factura se le agregan columnas con ALTER ... IF NOT EXISTS.
- * - El resto de las entidades del diagrama se crean acá (Conserje, Habitacion,
- *   Reserva, Estadia, Consumo, Huesped, NotaCredito, Pago, MedioDePago).
- * La jerarquía de medios de pago se mapea con "tabla única" (columna tipo).
- */
 public final class InicializadorBD {
 
     private InicializadorBD() { }
 
     public static void inicializar() {
         try (Connection con = ConexionBD.getConnection(); Statement st = con.createStatement()) {
-            
+
             st.execute(
                 "CREATE TABLE IF NOT EXISTS direccion (" +
                 "  id_direccion INT PRIMARY KEY," +
@@ -97,7 +89,7 @@ public final class InicializadorBD {
             st.execute(
                 "CREATE TABLE IF NOT EXISTS medio_de_pago (" +
                 "  id_medio_de_pago INT PRIMARY KEY," +
-                "  tipo VARCHAR(20) NOT NULL," +      // EFECTIVO|MONEDA_EXTRANJERA|CHEQUE_PROPIO|CHEQUE_TERCERO|TARJETA_CREDITO|TARJETA_DEBITO
+                "  tipo VARCHAR(20) NOT NULL," +
                 "  monto DECIMAL(12,2), fecha_de_pago DATE, id_pago INT," +
                 "  tipo_moneda VARCHAR(20)," +
                 "  numero_cheque INT, fecha_cheque DATE, banco VARCHAR(80), beneficiario VARCHAR(80)," +
@@ -107,7 +99,6 @@ public final class InicializadorBD {
                 "  numero_cuenta VARCHAR(40), saldo_cuenta DECIMAL(12,2)," +
                 "  CONSTRAINT fk_mp_pago FOREIGN KEY (id_pago) REFERENCES pago(id_pago))");
 
-            // ---------- SEEDS ----------
             try (ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM responsable_de_pago")) {
                 rs.next();
                 if (rs.getInt(1) == 0) sembrarCU14(st);
@@ -135,17 +126,14 @@ public final class InicializadorBD {
             "(5,'BELGRANO','2020','','1','3000','SANTA FE','SANTA FE','ARGENTINA')");
 
         st.execute("INSERT INTO responsable_de_pago (id_responsable, tipo, estado, razon_social, nombre, apellido, cuit, telefono, id_direccion) VALUES " +
-            // Todos los CUIT pasan la validacion de la ARCA: prefijo valido para el tipo
-            // de persona (30/33/34 juridica, 20/27 fisica) y digito verificador modulo 11.
+
             "(1,'JURIDICA','ACTIVO','HOTELERIA DEL LITORAL S.A.',NULL,NULL,'30-12345678-1','0342-4550000',1)," +
             "(2,'JURIDICA','ACTIVO','TURISMO PARANA S.R.L.',NULL,NULL,'30-99887766-7','0343-4231122',2)," +
             "(3,'JURIDICA','ACTIVO','CONSULTORA DEL CENTRO S.A.S.',NULL,NULL,'33-44556677-8','0342-4889900',3)," +
             "(4,'FISICA','ACTIVO',NULL,'JUAN','PEREZ','20-31222333-4','0342-4567788',4)," +
-            // Caso de prueba de la busqueda "contiene": se encuentra escribiendo "PEPE".
+
             "(5,'FISICA','ACTIVO',NULL,'JOSE','PEPE','20-28444555-5','0342-4551234',5)");
 
-        // Facturas de HOTELERIA DEL LITORAL y CONSULTORA DEL CENTRO: son las que
-        // bloquean la baja en el paso 2.A del CU14.
         st.execute("INSERT INTO factura (id_factura, fecha, cuit_responsable, monto, tipo, estado) VALUES " +
             "(1001,'2025-03-10','30-12345678-1',154300.00,'A','PAGADA')," +
             "(1002,'2025-04-22','30-12345678-1',90560.00,'A','PENDIENTE')," +
@@ -153,17 +141,6 @@ public final class InicializadorBD {
         System.out.println("Datos del CU14 cargados.");
     }
 
-    /**
-     * Responsables de pago adicionales, para tener un listado con volumen y
-     * poder probar la búsqueda con varias coincidencias.
-     *
-     * Todos los CUIT pasan la validación del sistema: prefijo acorde al tipo de
-     * persona (30/33/34 jurídica, 20/27 física) y dígito verificador módulo 11.
-     *
-     * Usa ON CONFLICT DO NOTHING, así corre en cada arranque sin duplicar: se
-     * insertan sólo los que falten. Si un responsable fue dado de baja
-     * (estado = 'ELIMINADO') tampoco se "revive", porque la fila sigue estando.
-     */
     private static void sembrarResponsablesAdicionales(Statement st) throws SQLException {
         st.execute("INSERT INTO direccion (id_direccion, calle, numero, departamento, piso, cod_postal, localidad, provincia, pais) VALUES " +
             "(6,'BV. GALVEZ','1425','','','3000','SANTA FE','SANTA FE','ARGENTINA')," +
@@ -184,7 +161,7 @@ public final class InicializadorBD {
             "(8,'JURIDICA','ACTIVO','CONSTRUCTORA SAN JERONIMO S.A.',NULL,NULL,'30-58990011-8','0342-4562200',8)," +
             "(9,'JURIDICA','ACTIVO','LABORATORIOS COSTA S.A.S.',NULL,NULL,'33-69801122-5','0342-4573311',9)," +
             "(10,'JURIDICA','ACTIVO','TRANSPORTE RIO SALADO S.R.L.',NULL,NULL,'30-62445566-1','0342-4584422',10)," +
-            // Otra coincidencia de \"PEPE\" para mostrar la busqueda por \"contiene\".
+
             "(11,'JURIDICA','ACTIVO','AGROPECUARIA EL PEPE S.A.',NULL,NULL,'34-55667788-5','0343-4235533',11)," +
             "(12,'JURIDICA','ACTIVO','SEGUROS DEL LITORAL S.A.',NULL,NULL,'30-57889900-2','0341-4246644',12)," +
             "(13,'FISICA','ACTIVO',NULL,'MARIA','GOMEZ','27-30455678-7','0342-4597755',13)," +
@@ -192,7 +169,6 @@ public final class InicializadorBD {
             "(15,'FISICA','ACTIVO',NULL,'LUCIA','FERNANDEZ','27-33221144-2','0342-4619977',15) " +
             "ON CONFLICT (id_responsable) DO NOTHING");
 
-        // Facturas para que estas dos firmas NO se puedan dar de baja (paso 2.A del CU14).
         st.execute("INSERT INTO factura (id_factura, fecha, cuit_responsable, monto, tipo, estado) VALUES " +
             "(1004,'2025-06-02','30-61234509-7',88400.00,'A','PAGADA')," +
             "(1005,'2025-07-19','33-69801122-5',132750.00,'A','PENDIENTE')," +
@@ -200,23 +176,13 @@ public final class InicializadorBD {
             "ON CONFLICT (id_factura) DO NOTHING");
     }
 
-    /**
-     * Corrección puntual de los CUIT de los datos de prueba: los valores
-     * originales no pasaban el dígito verificador (módulo 11) que valida el
-     * propio sistema, y uno usaba un prefijo de persona física para una S.A.S.
-     *
-     * Actualiza también las facturas, para que la verificación del CU14
-     * (existeFactura) siga encontrándolas. Es idempotente y sólo toca esos
-     * valores exactos: una vez ejecutada sobre una base ya cargada, este
-     * método puede eliminarse sin consecuencias.
-     */
     private static void corregirCuitDePrueba(Statement st) throws SQLException {
         String[][] cambios = {
-            {"30-12345678-9", "30-12345678-1"},   // HOTELERIA DEL LITORAL S.A.
-            {"30-99887766-5", "30-99887766-7"},   // TURISMO PARANA S.R.L.
-            {"27-33445566-8", "33-44556677-8"},   // CONSULTORA DEL CENTRO S.A.S.
-            {"20-28444555-1", "20-28444555-5"},   // PEPE, JOSE
-            {"30-55666777-2", "30-55666777-9"}    // RESPONSABLE PEPE S.R.L.
+            {"30-12345678-9", "30-12345678-1"},
+            {"30-99887766-5", "30-99887766-7"},
+            {"27-33445566-8", "33-44556677-8"},
+            {"20-28444555-1", "20-28444555-5"},
+            {"30-55666777-2", "30-55666777-9"}
         };
         int corregidos = 0;
         for (String[] c : cambios) {

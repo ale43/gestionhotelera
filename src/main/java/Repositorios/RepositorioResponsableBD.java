@@ -13,16 +13,6 @@ import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Implementación JDBC (PostgreSQL) de IRepositorioResponsable.
- * Lee la columna "tipo" para devolver la subclase correcta (PersonaFisica /
- * PersonaJuridica), como indica la nota del diagrama de secuencia.
- *
- * Criterios de búsqueda (CU03):
- *   - razonSocial : CONTIENE, sin distinguir mayúsculas ni acentos
- *   - cuit        : EMPIEZA CON, comparando sólo dígitos
- * El filtrado se resuelve en SQL (no se trae toda la tabla a memoria).
- */
 public class RepositorioResponsableBD implements IRepositorioResponsable {
 
     private static final String SELECT_BASE =
@@ -46,7 +36,7 @@ public class RepositorioResponsableBD implements IRepositorioResponsable {
 
     @Override
     public void actualizar(ResponsableDePago responsable) {
-        // En el CU14 sólo cambia el estado (baja lógica).
+
         String sql = "UPDATE responsable_de_pago SET estado = ? WHERE id_responsable = ?";
         try (Connection con = ConexionBD.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -66,7 +56,6 @@ public class RepositorioResponsableBD implements IRepositorioResponsable {
         StringBuilder sql = new StringBuilder(SELECT_BASE + "WHERE r.estado = 'ACTIVO'");
         List<String> params = new ArrayList<>();
 
-        // Razón social (jurídica) o "APELLIDO, NOMBRE" (física) que CONTENGA el texto.
         if (!rsCrit.isEmpty()) {
             sql.append(" AND (").append(sinAcentos("COALESCE(r.razon_social,'')")).append(" LIKE ?")
                .append(" OR ").append(sinAcentos("COALESCE(r.apellido,'') || ', ' || COALESCE(r.nombre,'')")).append(" LIKE ?")
@@ -76,7 +65,6 @@ public class RepositorioResponsableBD implements IRepositorioResponsable {
             params.add(patron);
         }
 
-        // CUIT: "empieza con" (criterio del enunciado), ignorando guiones y puntos.
         if (!cuCrit.isEmpty()) {
             sql.append(" AND ").append(soloDigitosSql("r.cuit")).append(" LIKE ?");
             params.add(escaparLike(cuCrit) + "%");
@@ -97,35 +85,26 @@ public class RepositorioResponsableBD implements IRepositorioResponsable {
         return lista;
     }
 
-    // ------------------------------------------------------------------
-    // Helpers de normalización (el mismo criterio en SQL y en Java)
-    // ------------------------------------------------------------------
-
-    /** Expresión SQL que pasa la columna a mayúsculas y le quita los acentos. */
     private static String sinAcentos(String expr) {
         return "translate(upper(" + expr + "), "
              + "'ÁÀÄÂÃÉÈËÊÍÌÏÎÓÒÖÔÕÚÙÜÛÑÇ', "
              + "'AAAAAEEEEIIIIOOOOOUUUUNC')";
     }
 
-    /** Expresión SQL que deja sólo los dígitos de una columna (quita - . y espacios). */
     private static String soloDigitosSql(String expr) {
         return "translate(COALESCE(" + expr + ",''), '-. ', '')";
     }
 
-    /** Patrón LIKE "contiene", normalizado igual que la columna. */
     private static String contiene(String criterio) {
         return "%" + escaparLike(normalizar(criterio)) + "%";
     }
 
-    /** Mayúsculas y sin acentos, para que el criterio matchee lo que devuelve sinAcentos(). */
     private static String normalizar(String s) {
         String sinTildes = Normalizer.normalize(s, Normalizer.Form.NFD)
                                      .replaceAll("\\p{M}+", "");
         return sinTildes.toUpperCase();
     }
 
-    /** Neutraliza los comodines de LIKE que pueda escribir el usuario. */
     private static String escaparLike(String s) {
         return s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }

@@ -1,10 +1,5 @@
 package DTOS;
 
-/**
- * Resultado de una operación de escritura (baja del CU14, alta/baja de usuarios).
- * Igual que ResultadoVerificacionDTO: código, no texto. La leyenda que ve el
- * conserje la resuelve la capa de presentación.
- */
 public class ResultadoBajaDTO {
     private final boolean exito;
     private final CodigoResultado codigo;

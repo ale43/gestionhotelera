@@ -59,7 +59,7 @@ public class RepositorioConserjeBD implements IRepositorioConserje {
 
     @Override
     public boolean crear(String nombre, String password) {
-        
+
         String sql = "INSERT INTO conserje (id_conserje, nombre, password) " +
                      "VALUES ((SELECT COALESCE(MAX(id_conserje),0)+1 FROM conserje), ?, ?)";
         try (Connection con = ConexionBD.getConnection();

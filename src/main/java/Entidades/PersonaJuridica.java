@@ -1,6 +1,5 @@
 package Entidades;
 
-/** Subclase Persona Jurídica (las "firmas": razón social + CUIT). Es lo que el ABM CU12/13/14 maneja. */
 public class PersonaJuridica extends ResponsableDePago {
 
     private String razonSocial;

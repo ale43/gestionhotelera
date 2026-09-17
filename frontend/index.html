@@ -7,8 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
+<style>  :root{
     --tinta:#1c2b25; --verde:#23463a; --verde-claro:#3a6b58;
     --laton:#b08545; --laton-claro:#cda567;
     --hueso:#f4efe6; --hueso-2:#ece4d6; --papel:#fbf8f2; --linea:#ddd2bf;
@@ -66,7 +65,6 @@
   .estado-cuit.neutro{color:#8a826f; font-weight:400; font-style:italic}
   .modal .msg.centrado{text-align:center}
 
-  /* ---- LOGIN (mockup CU01) ---- */
   .login-wrap{min-height:calc(100vh - 110px); display:flex; align-items:center; justify-content:center; padding:30px 20px}
   .login{background:var(--papel); border:1px solid var(--linea); border-radius:16px; box-shadow:var(--sombra);
     width:100%; max-width:420px; overflow:hidden}
@@ -127,7 +125,6 @@
     </div>
   </header>
 
-  <!-- ============ VISTA LOGIN (mockup del CU01 - Autenticar Usuario) ============ -->
   <div class="login-wrap" id="vistaLogin">
     <div class="login">
       <div class="top">
@@ -149,7 +146,6 @@
     </div>
   </div>
 
-  <!-- ============ VISTA PRINCIPAL (CU03 + CU14) ============ -->
   <main id="vistaApp" style="display:none">
     <section class="tarjeta">
       <h2><span class="tag">CU03</span> Buscar Responsable de Pago</h2>
@@ -218,44 +214,32 @@
 
   <div class="toast" id="toast"></div>
 
-<script>
-  const API = (location.protocol === "file:")
+<script>  const API = (location.protocol === "file:")
       ? "http://localhost:8080/api/responsables"
       : "/api/responsables";
 
-  let seleccionado = null;          // idResponsable pendiente de eliminar
-  let responsableSeleccionado = null; // sus datos, para armar los carteles del CU14
+  let seleccionado = null;
+  let responsableSeleccionado = null;
 
-  /* =====================================================================
-     CATALOGO DE MENSAJES — CAPA DE PRESENTACION
-     ---------------------------------------------------------------------
-     El backend nunca manda texto de pantalla: manda un CODIGO
-     (DTOS.CodigoResultado) y los datos. Todas las leyendas que ve el
-     conserje se arman aca, con las palabras EXACTAS del enunciado.
-     Cambiar un cartel, o traducir el sistema, no toca el backend.
-     ===================================================================== */
   const CONTINUAR = "PRESIONE CUALQUIER TECLA PARA CONTINUAR…";
 
   const MENSAJES = {
-    // --- CU01 Autenticar Usuario (paso 3.A) ---
+
     CREDENCIALES_INVALIDAS: () => "El usuario o la contraseña no son válidos",
 
-    // --- CU14 Dar de baja Responsable de Pago ---
-    // Paso 2 del flujo principal
     PUEDE_ELIMINARSE: (d) =>
       "Los datos de " + d.razonSocial + ", " + d.cuit + " serán eliminados del sistema.",
-    // Paso 2.A del flujo alternativo
+
     TIENE_FACTURAS: () =>
       "La firma no puede ser eliminada pues ya se le ha confeccionado una factura "
       + "en el Hotel en alguna oportunidad. " + CONTINUAR,
-    // Paso 3 del flujo principal
+
     ELIMINADO: (d) =>
       "Los datos de " + d.razonSocial + ", " + d.cuit + " han sido eliminados del sistema. "
       + CONTINUAR,
     RESPONSABLE_NO_ENCONTRADO: () =>
       "No se encontró el responsable de pago indicado.",
 
-    // --- Administración de usuarios del sistema ---
     DATOS_INCOMPLETOS:  () => "Debe completar el nombre de usuario y la contraseña.",
     NOMBRE_USUARIO_INVALIDO: () =>
       "El nombre de usuario debe tener entre 3 y 30 caracteres alfanuméricos, sin espacios.",
@@ -269,24 +253,17 @@
     USUARIO_CREADO:     (d) => "El usuario " + d.usuario + " ha sido cargado al sistema.",
     USUARIO_ELIMINADO:  (d) => "El usuario " + d.usuario + " ha sido eliminado del sistema.",
 
-    // --- Errores tecnicos (no son carteles del CU) ---
     ERROR_INESPERADO:      () => "Ocurrió un error inesperado. Intente nuevamente.",
     ID_INVALIDO:           () => "Ocurrió un error inesperado. Intente nuevamente.",
     RECURSO_NO_ENCONTRADO: () => "Ocurrió un error inesperado. Intente nuevamente.",
     METODO_NO_PERMITIDO:   () => "Ocurrió un error inesperado. Intente nuevamente."
   };
 
-  /* Traduce un codigo del backend al texto que ve el conserje. */
   function texto(codigo, datos){
     const f = MENSAJES[codigo];
     return f ? f(datos || {}) : "Ocurrió un error inesperado. Intente nuevamente.";
   }
 
-  /* ================= CU01 - Autenticar Usuario =================
-     Precondición del CU14: "El actor está autenticado en el sistema".
-     Valida contra la tabla `conserje` de PostgreSQL vía POST /api/login.
-     Los usuarios se administran en la BD (pgAdmin4).
-     Mensaje de error EXACTO del enunciado del CU01. */
   const API_LOGIN = (location.protocol === "file:")
       ? "http://localhost:8080/api/login"
       : "/api/login";
@@ -312,7 +289,7 @@
         document.getElementById("sesionUsuario").textContent = r.nombre;
         cargarUsuarios();
       } else {
-        // 3.A del CU01: el texto sale del catalogo de la vista, no del backend
+
         err.textContent = texto(r.codigo);
         err.classList.add("ver");
         document.getElementById("loginUsuario").value = "";
@@ -333,12 +310,10 @@
       '<tr><td colspan="4" class="vacio">Presione “Buscar” para listar los responsables de pago.</td></tr>';
   }
 
-  // Enter en el login dispara INGRESAR (requisito: click y <Enter> mismo efecto)
   ["loginUsuario","loginClave"].forEach(id => {
     document.getElementById(id).addEventListener("keydown", e => { if(e.key === "Enter") ingresar(); });
   });
 
-  /* ================= Administracion de usuarios (tabla conserje) ================= */
   const API_CONSERJES = (location.protocol === "file:")
       ? "http://localhost:8080/api/conserjes"
       : "/api/conserjes";
@@ -413,7 +388,6 @@
     }catch(e){ cerrarModal(); mostrarToast("Error de conexión con el backend.", false); }
   }
 
-  /* ================= Validacion de CUIT (formato ARCA: XX-XXXXXXXX-X) ================= */
   const PREFIJOS_CUIT = ["20","23","24","25","26","27","30","33","34"];
 
   function soloDigitos(s){ return s.replace(/\D/g, ""); }
@@ -425,8 +399,6 @@
     return d.slice(0,2) + "-" + d.slice(2,10) + "-" + d.slice(10);
   }
 
-  /* Devuelve null si el CUIT (11 digitos) es valido, o el motivo del error.
-     Algoritmo modulo 11 con pesos 5,4,3,2,7,6,5,4,3,2. */
   function validarCuitCompleto(d){
     if (!PREFIJOS_CUIT.includes(d.slice(0,2)))
       return "el prefijo " + d.slice(0,2) + " no corresponde a un tipo de CUIT válido";
@@ -441,7 +413,6 @@
     return null;
   }
 
-  // Mascara en vivo + feedback debajo del campo
   document.getElementById("cuit").addEventListener("input", function(){
     this.value = formatearCuit(this.value);
     const d = soloDigitos(this.value);
@@ -457,17 +428,14 @@
     }
   });
 
-  // <Enter> en cualquier criterio dispara la busqueda.
   ["razon","cuit"].forEach(id => {
     document.getElementById(id).addEventListener("keydown", e => { if (e.key === "Enter") buscar(); });
   });
 
-  /* ================= CU03 - Buscar Responsable de Pago ================= */
   async function buscar(){
     const razon = document.getElementById("razon").value.trim();
     const cuit  = document.getElementById("cuit").value.trim();
 
-    // Validacion: si el CUIT esta completo (11 digitos), debe ser valido
     const dCuit = soloDigitos(cuit);
     if (dCuit.length === 11){
       const err = validarCuitCompleto(dCuit);
@@ -502,18 +470,16 @@
     }
   }
 
-  /* ================= CU14 ================= */
-  // Conserje presiona "BORRAR" -> prepararBaja(idResponsable)
   async function solicitarBaja(id){
     try{
       const resp = await fetch(API + "/" + id + "/preparar");
       const v = await resp.json();
-      responsableSeleccionado = v.responsable;   // razonSocial y cuit para los carteles
+      responsableSeleccionado = v.responsable;
       if(v.puedeEliminarse){
-        // Paso 2 del CU14: cartel + botones ELIMINAR / CANCELAR
+
         abrirModalConfirmar(id, texto(v.codigo, v.responsable));
       } else {
-        // Paso 2.A: cartel sin botones, se cierra con cualquier tecla
+
         abrirCartel("No es posible eliminar", texto(v.codigo, v.responsable), true, null);
       }
     }catch(e){ mostrarToast("Error de conexión con el backend.", false); }
@@ -530,12 +496,10 @@
       '<button class="btn-eliminar" onclick="eliminar()">ELIMINAR</button>';
     document.getElementById("modal").onclick = null;
     document.getElementById("overlay").classList.add("activo");
-    // Requerimiento especial: <Enter> y el click sobre el foco tienen el mismo efecto
+
     setTimeout(() => document.querySelector("#modalAcciones .btn-cancelar").focus(), 30);
   }
 
-  /* Cartel estilo enunciado: sin botones, se cierra con CUALQUIER TECLA o click
-     ("El actor presiona cualquier tecla" - pasos 2.A.1 y 4 del CU14). */
   let modoCartel = false;
   let cartelAlCerrar = null;
 
@@ -565,21 +529,19 @@
     if (cb) cb();
   }
 
-  // Cualquier tecla cierra el cartel; Escape cancela la confirmacion
   document.addEventListener("keydown", e => {
     if (!document.getElementById("overlay").classList.contains("activo")) return;
     if (modoCartel){ e.preventDefault(); cerrarCartel(); }
     else if (e.key === "Escape") cerrarModal();
   });
 
-  // Actor confirma ELIMINAR -> confirmarEliminacion(idResponsable) (baja lógica)
   async function eliminar(){
     if(seleccionado === null) return;
     try{
       const resp = await fetch(API + "/" + seleccionado + "/eliminar", { method:"POST" });
       const r = await resp.json();
       cerrarModal();
-      // Pasos 3 y 4 del CU14: cartel de confirmacion, se cierra con cualquier tecla
+
       if(r.exito) abrirCartel("Baja realizada", texto(r.codigo, responsableSeleccionado), false, () => buscar());
       else abrirCartel("No es posible eliminar", texto(r.codigo, responsableSeleccionado), true, null);
     }catch(e){ cerrarModal(); mostrarToast("Error de conexión con el backend.", false); }
