@@ -1,0 +1,7 @@
+db.properties
+target/
+*.class
+nbproject/private/
+.nb-gradle/
+Thumbs.db
+.DS_Store
