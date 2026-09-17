@@ -1,0 +1,6 @@
+db.host=localhost
+db.puerto=5432
+db.base=gestion_hotelera
+db.usuario=postgres
+db.password=CAMBIE_ESTO_POR_SU_CONTRASENA
+
