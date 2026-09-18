@@ -9,11 +9,11 @@ import java.sql.SQLException;
 public class RepositorioFacturasBD implements IRepositorioFacturas {
 
     @Override
-    public boolean existeFactura(String cuit) {
-        String sql = "SELECT COUNT(*) FROM factura WHERE cuit_responsable = ?";
+    public boolean existeFactura(Integer idResponsable) {
+        String sql = "SELECT COUNT(*) FROM factura WHERE id_responsable = ?";
         try (Connection con = ConexionBD.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, cuit);
+            ps.setInt(1, idResponsable);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next() && rs.getInt(1) > 0;
             }

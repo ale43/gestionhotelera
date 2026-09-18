@@ -1,6 +1,7 @@
 package Repositorios;
 
 import Entidades.Direccion;
+import Entidades.EstadoResponsable;
 import Entidades.PersonaFisica;
 import Entidades.PersonaJuridica;
 import Entidades.ResponsableDePago;
@@ -16,9 +17,12 @@ import java.util.List;
 public class RepositorioResponsableBD implements IRepositorioResponsable {
 
     private static final String SELECT_BASE =
-        "SELECT r.id_responsable, r.tipo, r.estado, r.razon_social, r.nombre, r.apellido, r.cuit, r.telefono, " +
+        "SELECT r.id_responsable, r.tipo, r.estado, pj.razon_social, pf.nombre, pf.apellido, pf.id_huesped, r.cuit, r.telefono, " +
         "       d.calle, d.numero, d.departamento, d.piso, d.cod_postal, d.localidad, d.provincia, d.pais " +
-        "FROM responsable_de_pago r LEFT JOIN direccion d ON r.id_direccion = d.id_direccion ";
+        "FROM responsable_de_pago r " +
+        "     LEFT JOIN direccion d         ON r.id_direccion   = d.id_direccion " +
+        "     LEFT JOIN persona_juridica pj ON r.id_responsable = pj.id_responsable " +
+        "     LEFT JOIN persona_fisica pf   ON r.id_responsable = pf.id_responsable ";
 
     @Override
     public ResponsableDePago buscarPorId(Integer idResponsable) {
@@ -40,7 +44,7 @@ public class RepositorioResponsableBD implements IRepositorioResponsable {
         String sql = "UPDATE responsable_de_pago SET estado = ? WHERE id_responsable = ?";
         try (Connection con = ConexionBD.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, responsable.getEstado());
+            ps.setString(1, responsable.getEstado().name());
             ps.setInt(2, responsable.getIdResponsable());
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -53,12 +57,13 @@ public class RepositorioResponsableBD implements IRepositorioResponsable {
         String rsCrit = razonSocial == null ? "" : razonSocial.trim();
         String cuCrit = soloDigitos(cuit);
 
-        StringBuilder sql = new StringBuilder(SELECT_BASE + "WHERE r.estado = 'ACTIVO'");
+        StringBuilder sql = new StringBuilder(
+            SELECT_BASE + "WHERE r.estado = '" + EstadoResponsable.ACTIVO.name() + "'");
         List<String> params = new ArrayList<>();
 
         if (!rsCrit.isEmpty()) {
-            sql.append(" AND (").append(sinAcentos("COALESCE(r.razon_social,'')")).append(" LIKE ?")
-               .append(" OR ").append(sinAcentos("COALESCE(r.apellido,'') || ', ' || COALESCE(r.nombre,'')")).append(" LIKE ?")
+            sql.append(" AND (").append(sinAcentos("COALESCE(pj.razon_social,'')")).append(" LIKE ?")
+               .append(" OR ").append(sinAcentos("COALESCE(pf.apellido,'') || ', ' || COALESCE(pf.nombre,'')")).append(" LIKE ?")
                .append(")");
             String patron = contiene(rsCrit);
             params.add(patron);
@@ -127,9 +132,11 @@ public class RepositorioResponsableBD implements IRepositorioResponsable {
         if ("JURIDICA".equals(tipo)) {
             r = new PersonaJuridica(id, rs.getString("razon_social"), cuit, dir, tel);
         } else {
-            r = new PersonaFisica(id, rs.getString("nombre"), rs.getString("apellido"), cuit, dir, tel);
+            Integer idHuesped = rs.getObject("id_huesped", Integer.class);
+            r = new PersonaFisica(id, rs.getString("nombre"), rs.getString("apellido"),
+                                  cuit, dir, tel, idHuesped);
         }
-        r.setEstado(rs.getString("estado"));
+        r.setEstado(EstadoResponsable.valueOf(rs.getString("estado")));
         return r;
     }
 }

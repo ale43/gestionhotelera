@@ -22,7 +22,7 @@ public class ControladorResponsable {
             return new ResultadoVerificacionDTO(false, CodigoResultado.RESPONSABLE_NO_ENCONTRADO, null);
         }
 
-        boolean tieneFacturas = repoFact.existeFactura(res.getCuit());
+        boolean tieneFacturas = repoFact.existeFactura(res.getIdResponsable());
 
         if (tieneFacturas) {
             return new ResultadoVerificacionDTO(false, CodigoResultado.TIENE_FACTURAS, res.toDTO());
@@ -38,7 +38,7 @@ public class ControladorResponsable {
             return new ResultadoBajaDTO(false, CodigoResultado.RESPONSABLE_NO_ENCONTRADO);
         }
 
-        res.setEstado("ELIMINADO");
+        res.darDeBaja();
         repoResp.actualizar(res);
 
         return new ResultadoBajaDTO(true, CodigoResultado.ELIMINADO);

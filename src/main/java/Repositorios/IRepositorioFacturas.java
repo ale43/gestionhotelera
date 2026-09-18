@@ -1,5 +1,5 @@
 package Repositorios;
 
 public interface IRepositorioFacturas {
-    boolean existeFactura(String cuit);
+    boolean existeFactura(Integer idResponsable);
 }

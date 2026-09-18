@@ -43,11 +43,17 @@ public class ControladorSesion {
         return new ResultadoBajaDTO(true, CodigoResultado.USUARIO_CREADO);
     }
 
-    public ResultadoBajaDTO eliminarUsuario(String nombre) {
+    public ResultadoBajaDTO eliminarUsuario(String nombre, String usuarioActual) {
         IRepositorioConserje repo = RepositorioFactory.getRepositorioConserje();
 
         if (nombre == null || nombre.isBlank()) {
             return new ResultadoBajaDTO(false, CodigoResultado.DATOS_INCOMPLETOS);
+        }
+        if (usuarioActual == null || usuarioActual.isBlank()) {
+            return new ResultadoBajaDTO(false, CodigoResultado.DATOS_INCOMPLETOS);
+        }
+        if (nombre.trim().equalsIgnoreCase(usuarioActual.trim())) {
+            return new ResultadoBajaDTO(false, CodigoResultado.USUARIO_SESION_ACTUAL);
         }
         if (!repo.existeNombre(nombre.trim())) {
             return new ResultadoBajaDTO(false, CodigoResultado.USUARIO_NO_EXISTE);

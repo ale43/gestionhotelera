@@ -95,7 +95,7 @@ public class ServidorRest {
 
             if ("eliminar".equals(resto) && "POST".equalsIgnoreCase(metodo)) {
                 Map<String, String> datos = parsearQuery(leerCuerpo(ex.getRequestBody()));
-                ResultadoBajaDTO r = controladorSesion.eliminarUsuario(datos.get("usuario"));
+                ResultadoBajaDTO r = controladorSesion.eliminarUsuario(datos.get("usuario"), datos.get("actual"));
                 responderJson(ex, 200, Json.de(r));
                 return;
             }
